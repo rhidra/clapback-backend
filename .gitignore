@@ -1,0 +1,6 @@
+data-node/
+
+api/.env
+api/dist/
+api/node_modules/
+
