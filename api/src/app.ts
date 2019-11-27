@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import express from "express";
+import createError = require("http-errors");
 import mongoose = require("mongoose");
+import logger = require("morgan");
 import path from "path";
 import * as sessionAuth from "./middleware/sessionAuth";
 import * as routes from "./routes";
@@ -14,6 +16,9 @@ const app = express();
 // app.set( "views", path.join( __dirname, "views" ) );
 // app.set( "view engine", "ejs" );
 
+app.use(logger("dev"));
+app.use(express.json());
+
 // Connecting to MongoDB
 mongoose.connect(process.env.MONGODB_URL).then(() => {
     // tslint:disable-next-line:no-console
@@ -24,7 +29,11 @@ mongoose.connect(process.env.MONGODB_URL).then(() => {
 }, () => console.log("Not connected !!!!"));
 
 sessionAuth.register(app);
+
 routes.register(app);
+
+// Catch 404 and forward to error handler
+app.use((req, res, next) => next(createError(404)));
 
 // Start the Express server
 // tslint:disable-next-line:no-console

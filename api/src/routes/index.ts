@@ -7,8 +7,6 @@ export const register = (app: express.Application) => {
     // define a route handler for the default home page
     app.get( "/", ( req: any, res ) => {
         res.send( "Hello world !" );
-        // tslint:disable-next-line:no-console
-        console.log(NewsItem.find());
     });
 
     // define a secure route handler for the login page that redirects to /guitars
