@@ -3,8 +3,10 @@ import express from 'express';
 import createError = require('http-errors');
 import mongoose = require('mongoose');
 import logger = require('morgan');
+import bodyParser = require('body-parser');
 import * as auth from './middleware/auth';
 import indexRouter from './routes/index';
+import newsRouter from './routes/news';
 
 // Initialize config file .env
 dotenv.config();
@@ -14,6 +16,8 @@ const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
 
 // Connecting to MongoDB
 mongoose.connect(process.env.MONGODB_URL).then(() => {
@@ -24,6 +28,7 @@ mongoose.connect(process.env.MONGODB_URL).then(() => {
 auth.register(app);
 
 app.use('/', indexRouter);
+app.use('/news', newsRouter);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => next(createError(404)));

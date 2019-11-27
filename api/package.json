@@ -21,6 +21,7 @@
     "@types/mongoose": "^5.5.32",
     "@types/morgan": "^1.7.37",
     "@types/node": "~12.12.9",
+    "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.4",
     "cors": "~2.8.5",
     "debug": "~2.6.9",
