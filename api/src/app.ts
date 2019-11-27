@@ -3,18 +3,14 @@ import express from 'express';
 import createError = require('http-errors');
 import mongoose = require('mongoose');
 import logger = require('morgan');
-import path from 'path';
-import * as sessionAuth from './middleware/sessionAuth';
-import * as routes from './routes';
+import * as auth from './middleware/auth';
+import indexRouter from './routes/index';
 
 // Initialize config file .env
 dotenv.config();
 
 const port = process.env.SERVER_PORT;
 const app = express();
-
-// app.set( "views", path.join( __dirname, "views" ) );
-// app.set( "view engine", "ejs" );
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -25,9 +21,9 @@ mongoose.connect(process.env.MONGODB_URL).then(() => {
     mongoose.connection.once('open', () => console.log('Connected to Database!'));
 }, () => console.log('Not connected !!!!'));
 
-sessionAuth.register(app);
+auth.register(app);
 
-routes.register(app);
+app.use('/', indexRouter);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => next(createError(404)));

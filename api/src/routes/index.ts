@@ -1,26 +1,23 @@
 import * as express from 'express';
+import * as auth from '../middleware/auth';
 
-export const register = (app: express.Application) => {
-    const auth = app.locals.oidc;
+const router = express.Router();
 
-    // define a route handler for the default home page
-    app.get('/', ( req: any, res ) => {
-        res.send('Hello world !' );
-    });
+router.get('/', (req, res, next) => {
+    res.send('Hello world !');
+});
 
-    // define a secure route handler for the login page that redirects to /guitars
-    app.get('/login', auth.ensureAuthenticated(), (req, res ) => {
-        res.redirect( '/page' );
-    });
+router.get('/page', auth.ensureAuthenticated, (req, res) => {
+    res.send('logged in !');
+});
 
-    // define a route to handle logout
-    app.get('/logout', ( req: any, res ) => {
-        req.logout();
-        res.redirect('/');
-    });
+router.get('/login', auth.ensureAuthenticated, (req, res) => {
+    res.redirect('/page');
+});
 
-    // define a secure route handler for the guitars page
-    app.get('/page', auth.ensureAuthenticated(), (req: any, res ) => {
-        res.send('logged in' + JSON.stringify(req.userContext) + ' !!!' );
-    });
-};
+router.get('/logout', (req: any, res) => {
+    req.logout();
+    res.redirect('/');
+});
+
+export = router;

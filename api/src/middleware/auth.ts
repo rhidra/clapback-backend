@@ -24,3 +24,7 @@ export const register = ( app: any ) => {
     // Add the OIDC client to the app.locals
     app.locals.oidc = oidc;
 };
+
+export function ensureAuthenticated(req: any, res: any, next: any) {
+    return req.app.locals.oidc.ensureAuthenticated()(req, res, next);
+}
