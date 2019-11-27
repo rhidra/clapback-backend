@@ -13,6 +13,10 @@ const NewsItemSchema = new Schema({
         type: String,
         required: false,
     },
+    image: {
+        type: String,
+        required: false,
+    },
     group: {
         type: Schema.Types.ObjectId,
         ref: 'NewsGroup',
