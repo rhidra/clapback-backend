@@ -5,6 +5,7 @@ import mongoose = require('mongoose');
 import logger = require('morgan');
 import bodyParser = require('body-parser');
 import * as auth from './middleware/auth';
+import cors from 'cors';
 import indexRouter from './routes/index';
 import newsRouter from './routes/news';
 
@@ -18,6 +19,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(cors());
 
 // Connecting to MongoDB
 mongoose.connect(process.env.MONGODB_URL).then(() => {
