@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import NewsItem from '../models/NewsItemModel';
 import NewsGroup from '../models/NewsGroupModel';
 import moment from 'moment';
+import upload from '../middleware/upload';
 import {handleError, sendData, sendData_cb} from '../middleware/utils';
 
 const db = mongoose.connection;
@@ -35,7 +36,7 @@ router.route('/item/:id')
 /**
  * GET /news/group?all={true|false}
  * Send all the news groups.
- * @param all: add the associated news items
+ * @param all add the associated news items
  *
  * POST /news/group
  * Create a news group, without the associated items.
@@ -54,6 +55,13 @@ router.route('/group')
     )
     .post((req, res) => NewsGroup.create(req.body, sendData_cb(res)));
 
+/**
+ * GET      /news/group/:id
+ * POST     /news/group/:id
+ * DELETE   /news/group/:id
+ * Return, modify and delete a specific news group.
+ * @param :id ID of the news group
+ */
 router.route('/group/:id')
     .get((req, res) => NewsGroup.findById(req.params.id, (err, group: any) => {
         handleError(err, res);
@@ -64,5 +72,14 @@ router.route('/group/:id')
     }))
     .post((req, res) => NewsGroup.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res)))
     .delete((req, res) => NewsGroup.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));
+
+router.route('/upload')
+    .post(upload.single('cover'), (req, res) => {
+        if (!req.file) {
+            res.status(500);
+            return res.send({err: 'No image received !'});
+        }
+        return res.send({fileName: req.protocol + '://' + req.get('host') + '/images/' + req.file.filename});
+    });
 
 export = router;

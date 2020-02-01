@@ -20,6 +20,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.static('public'));
 
 // Connecting to MongoDB
 mongoose.connect(process.env.MONGODB_URL).then(() => {
