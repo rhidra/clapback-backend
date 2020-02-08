@@ -1,7 +1,8 @@
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 
-export function handleError(err: mongoose.Error, res: express.Response) {
+/* ROUTING PATH */
+export function handleError(err: mongoose.Error | any, res: express.Response) {
     if (err) {
         res.status(500);
         res.send(err);
@@ -22,4 +23,49 @@ export function sendData(res: express.Response, err: mongoose.Error, data: any):
         res.send(data);
         resolve();
     });
+}
+
+export function sendSuccess(res: express.Response): Promise<any> {
+    return new Promise<any>(resolve => {
+        res.send({status: 'success'});
+        resolve();
+    });
+}
+
+export function sendError(err: string, res: express.Response): Promise<any> {
+    return new Promise<any>(resolve => {
+        handleError({status: 'error', error: err}, res);
+    });
+}
+
+/* MEDIA SERVER */
+export function buildModifiedFilename(filename: string, opt: any) {
+    return getFilename(filename)
+        + (opt.quality ? '_q' + opt.quality : '')
+        + (opt.width ? '_w' + opt.width : '')
+        + (opt.height ? '_h' + opt.height : '')
+        + '.' + getExtension(filename);
+}
+
+export function buildPath(filename: string): string {
+    return 'public/media/' + filename;
+}
+
+export function buildUrl(filename: string, protocol: string, host: string): string {
+    return protocol + '://' + host + '/media/' + filename;
+}
+
+export function getFilename(filename: string): string {
+    const ext = getExtension(filename);
+    return ext ? filename.substring(0, filename.length - getExtension(filename).length - 1) : undefined;
+}
+
+export function getExtension(filename: string): string {
+    const ext = /(?:\.([^.]+))?$/.exec(filename)[1];
+    return ext ? ext.toLowerCase() : ext;
+}
+
+/* MATH */
+export function clamp(n: number, min: number, max?: number) {
+    return max ? Math.min(Math.max(n, min), max) : Math.max(n, min);
 }

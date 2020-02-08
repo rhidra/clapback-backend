@@ -73,13 +73,4 @@ router.route('/group/:id')
     .post((req, res) => NewsGroup.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res)))
     .delete((req, res) => NewsGroup.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));
 
-router.route('/upload')
-    .post(upload.single('cover'), (req, res) => {
-        if (!req.file) {
-            res.status(500);
-            return res.send({err: 'No image received !'});
-        }
-        return res.send({fileName: req.protocol + '://' + req.get('host') + '/images/' + req.file.filename});
-    });
-
 export = router;
