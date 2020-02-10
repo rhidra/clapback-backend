@@ -16,9 +16,6 @@ dotenv.config();
 const port = process.env.SERVER_PORT;
 const app = express();
 
-// Media file supported format
-export const supportedImages = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif'];
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false}));
