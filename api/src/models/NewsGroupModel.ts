@@ -8,7 +8,11 @@ const NewsGroupSchema = new Schema({
     image: {
         type: String,
         required: false,
-    }
+    },
+    approved: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 export = mongoose.model('NewsGroup', NewsGroupSchema);

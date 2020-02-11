@@ -13,7 +13,7 @@ const router = express.Router();
  * Send the latest news group that is not in the future.
  */
 router.route('/latest')
-    .get((req, res) => NewsGroup.find({})
+    .get((req, res) => NewsGroup.find({approved: true})
         .then(data => new Promise(resolve => {
             const isLatest = (ltst: any, grp: any): boolean =>
                 moment(grp.date) > moment(ltst.date) && moment(grp.date) <= moment();
