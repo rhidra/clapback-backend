@@ -1,12 +1,14 @@
 import * as express from 'express';
-import {sendError, sendSuccess} from '../middleware/utils';
+import {sendData_cb, sendError, sendSuccess} from '../middleware/utils';
 import crypto from 'crypto';
 import PendingUser from '../models/PendingUserModel';
+import RefreshTokenModel from '../models/RefreshTokenModel';
 import moment from 'moment';
 import UserModel from '../models/UserModel';
 import jwt from 'express-jwt';
 import passport from '../middleware/passport';
 import express_jwt_permissions from 'express-jwt-permissions';
+import NewsItem from '../models/NewsItemModel';
 
 const guard = express_jwt_permissions();
 const router = express.Router();
@@ -27,16 +29,62 @@ router.post('/register', (req: express.Request, res: express.Response) => {
     const user: any = new UserModel({email});
     user.addPermission('user');
     user.setPassword(password);
-    user.save().then(() => res.json({user: user.toAuthJSON()}));
+    user.save().then(() => {
+        const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
+        res.json(Object.assign({refreshToken}, user.toAuthJSON()));
+    });
 });
 
 /**
  * POST /auth/login
  * Classic email/password login
+ * @body {email, password}
  */
 router.post('/login', passport.authenticate('local'), (req: express.Request, res: express.Response) => {
-    (req.user as any).generateJWT();
-    res.json({user: (req.user as any).toAuthJSON()});
+    const refreshToken: string = (RefreshTokenModel as any).generate((req.user as any).id);
+    res.json(Object.assign({refreshToken}, (req.user as any).toAuthJSON()));
+});
+
+/**
+ * POST /auth/token
+ * Send a new JWT token, useful when the previous token is expired.
+ * Need a refresh token, created at login.
+ * @body {id: userId, refreshToken}
+ */
+router.post('/token', (req: express.Request, res: express.Response) => {
+    const p: Array<Promise<any>> = [];
+    p.push(UserModel.findById(req.body.id).exec());
+    p.push(RefreshTokenModel.findOne({userId: req.body.id, token: req.body.refreshToken,
+        status: 'active', exp: {$gte: moment()}}).exec());
+    Promise.all(p).then((t: any) => {
+        const [user, refreshToken] = t;
+        if (!user || !user.permissions.includes('user')) { sendError('Permission denied !', res, 403); }
+        if (!refreshToken) { sendError('Refresh token invalid !', res, 403); }
+        res.json({user: user.toAuthJSON()});
+    });
+});
+
+/**
+ * POST /auth/token/reject
+ * Revoke a refresh token when it is compromised
+ * @body {refreshToken}
+ */
+router.post('/token/reject', auth, guard.check('admin'), (req: express.Request, res: express.Response) => {
+    RefreshTokenModel.find({token: req.body.refreshToken}).then(tokens => {
+        tokens.forEach((token: any) => {
+            token.status = 'revoked';
+            token.save();
+        });
+        sendSuccess(res);
+    });
+});
+
+/**
+ * POST /auth/user/:id
+ * Edit a user
+ */
+router.post('/user/:id', auth, guard.check('admin'), (req: express.Request, res: express.Response) => {
+    UserModel.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res));
 });
 
 router.get('/data', auth, guard.check('user'), (req, res) => {

@@ -2,9 +2,9 @@ import * as express from 'express';
 import * as mongoose from 'mongoose';
 
 /* ROUTING PATH */
-export function handleError(err: mongoose.Error | any, res: express.Response) {
+export function handleError(err: mongoose.Error | any, res: express.Response, errorCode: number = 500) {
     if (err) {
-        res.status(500);
+        res.status(errorCode);
         res.send(err);
     }
 }
@@ -32,9 +32,9 @@ export function sendSuccess(res: express.Response): Promise<any> {
     });
 }
 
-export function sendError(err: string, res: express.Response): Promise<any> {
+export function sendError(err: string, res: express.Response, errorCode: number = 500): Promise<any> {
     return new Promise<any>(resolve => {
-        handleError({status: 'error', error: err}, res);
+        handleError({status: 'error', error: err}, res, errorCode);
     });
 }
 

@@ -17,6 +17,7 @@ const UserSchema = new Schema({
         type: [String],
         required: true,
         default: ['user'],
+        enum: ['user', 'editor', 'admin'],
     },
 
     // Hashed password
@@ -47,7 +48,7 @@ UserSchema.methods.generateJWT = function() {
 
 UserSchema.methods.toAuthJSON = function() {
     return {
-        _id: this._id,
+        id: this._id,
         email: this.email,
         token: this.generateJWT(),
     };
