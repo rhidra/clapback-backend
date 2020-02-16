@@ -1,17 +1,19 @@
 import dotenv from 'dotenv';
+// Initialize config file .env
+dotenv.config();
+
 import express from 'express';
 import createError = require('http-errors');
 import mongoose = require('mongoose');
 import logger = require('morgan');
 import bodyParser = require('body-parser');
-import * as auth from './middleware/auth';
+import auth from './middleware/passport';
 import cors from 'cors';
 import indexRouter from './routes/index';
 import newsRouter from './routes/news';
 import mediaRouter from './routes/media';
-
-// Initialize config file .env
-dotenv.config();
+import authRouter from './routes/auth';
+import jwt from 'express-jwt';
 
 const port = process.env.SERVER_PORT;
 const app = express();
@@ -28,9 +30,10 @@ mongoose.connect(process.env.MONGODB_URL).then(() => {
     mongoose.connection.once('open', () => console.log('Connected to Database!'));
 }, () => console.log('Not connected to database !'));
 
-auth.register(app);
+app.use(auth.initialize());
 
 app.use('/', indexRouter);
+app.use('/auth', authRouter);
 app.use('/news', newsRouter);
 app.use('/media', mediaRouter);
 
