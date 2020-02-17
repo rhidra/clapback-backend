@@ -13,7 +13,6 @@
     "start": "node ."
   },
   "dependencies": {
-    "@okta/oidc-middleware": "~1.0.2",
     "@types/cors": "~2.8.6",
     "@types/dotenv": "~8.2.0",
     "@types/express": "~4.17.2",
