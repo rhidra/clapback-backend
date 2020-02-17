@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as mongoose from 'mongoose';
+import crypto from 'crypto';
 
 /* ROUTING PATH */
 export function handleError(err: mongoose.Error | any, res: express.Response, errorCode: number = 500) {
@@ -36,6 +37,13 @@ export function sendError(err: string, res: express.Response, errorCode: number 
     return new Promise<any>(resolve => {
         handleError({status: 'error', error: err}, res, errorCode);
     });
+}
+
+/* AUTHENTICATION */
+export function hash(data: string): string {
+    const h = crypto.createHash('sha256');
+    h.update(data);
+    return h.digest('hex');
 }
 
 /* MEDIA SERVER */

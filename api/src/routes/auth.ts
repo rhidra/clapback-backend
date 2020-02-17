@@ -1,6 +1,5 @@
 import * as express from 'express';
-import {sendData_cb, sendError, sendSuccess} from '../middleware/utils';
-import crypto from 'crypto';
+import {sendData_cb, sendError, sendSuccess, hash} from '../middleware/utils';
 import PendingUser from '../models/PendingUserModel';
 import RefreshTokenModel from '../models/RefreshTokenModel';
 import moment from 'moment';
@@ -8,14 +7,10 @@ import UserModel from '../models/UserModel';
 import jwt from 'express-jwt';
 import passport from '../middleware/passport';
 import express_jwt_permissions from 'express-jwt-permissions';
-import NewsItem from '../models/NewsItemModel';
 
 const guard = express_jwt_permissions();
 const router = express.Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
-
-// Time to input the SMS code (in seconds)
-const delaySize = 30;
 
 /**
  * POST /auth/registration
@@ -40,7 +35,7 @@ router.post('/register', (req: express.Request, res: express.Response) => {
  * Classic email/password login
  * @body {email, password}
  */
-router.post('/login', passport.authenticate('local'), (req: express.Request, res: express.Response) => {
+router.post('/login', passport.authenticate('email'), (req: express.Request, res: express.Response) => {
     const refreshToken: string = (RefreshTokenModel as any).generate((req.user as any).id);
     res.json(Object.assign({refreshToken}, (req.user as any).toAuthJSON()));
 });
@@ -60,7 +55,7 @@ router.post('/token', (req: express.Request, res: express.Response) => {
         const [user, refreshToken] = t;
         if (!user || !user.permissions.includes('user')) { sendError('Permission denied !', res, 403); }
         if (!refreshToken) { sendError('Refresh token invalid !', res, 403); }
-        res.json({user: user.toAuthJSON()});
+        res.json(user.toAuthJSON());
     });
 });
 
@@ -79,6 +74,7 @@ router.post('/token/reject', auth, guard.check('admin'), (req: express.Request, 
     });
 });
 
+// TODO: Encapsulate admin user edit API in its own user API
 /**
  * POST /auth/user/:id
  * Edit a user
@@ -87,6 +83,7 @@ router.post('/user/:id', auth, guard.check('admin'), (req: express.Request, res:
     UserModel.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res));
 });
 
+// TODO: Remove this route
 router.get('/data', auth, guard.check('user'), (req, res) => {
     console.log(req);
     res.json({data: 'success', user: req.user});
@@ -95,15 +92,14 @@ router.get('/data', auth, guard.check('user'), (req, res) => {
 /**
  * SMS Phone Login protocol :
  * - App sends phone number to the backend :
- *      POST /auth/
- *          phone: phone number of the user
+ *      POST /auth/phone
+ *      @body {phone}
  * - Backend generate SMS code linked to the timestamp
  * - Backend store info temporarily in the DB
- * - Use API YunPian to send SMS code
+ * - API YunPian sends SMS code
  * - User receives the SMS, input the code and send it to the backend
- *      POST /auth/login/
- *          phone: phone number of the user
- *          code: code received by SMS by the user
+ *      POST /auth/phone/login/
+ *      @body {id: Pending user id, phone, code}
  * - Backend test the validity of the code
  * - Backend search the user in Okta, either create the user or just get his ID
  * - Backend authenticate the user with Okta's API and get the token
@@ -112,11 +108,11 @@ router.get('/data', auth, guard.check('user'), (req, res) => {
  *
  */
 
-router.post('/', (req: express.Request, res: express.Response) => {
+router.post('/phone', (req: express.Request, res: express.Response) => {
     const code = Math.floor(100000 + Math.random() * 900000) + '';
-    console.log('Code generated :', code);
 
     // TODO: Send the code to the SMS API
+    console.log('Code generated :', code);
     // ...
 
     const codeHashed = hash(code);
@@ -124,19 +120,22 @@ router.post('/', (req: express.Request, res: express.Response) => {
         .then(user => res.send({id: user._id}));
 });
 
-router.post('/login', (req: express.Request, res: express.Response) => {
-    const now = moment();
-    const phone = req.body.phone;
-    PendingUser.findOne({_id: req.body.id, phone, codeHashed: hash(req.body.code)}).then((user: any) => {
-        if (moment(user.date).add(delaySize, 'seconds') >= now) {
-            user.remove();
-            sendSuccess(res);
+router.post('/phone/login', passport.authenticate('phone'), (req: express.Request, res: express.Response) => {
+    UserModel.findOne({phone: req.body.phone}).then((user: any) => {
+        if (user) {
+            // Log the user in
+            const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
+            res.json(Object.assign({refreshToken}, user.toAuthJSON()));
         } else {
-            sendError('Code outdated !', res);
+            // Register the user
+            user = new UserModel({phone: req.body.phone});
+            user.addPermission('user');
+            user.save().then(() => {
+                const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
+                res.json(Object.assign({refreshToken}, user.toAuthJSON()));
+            });
         }
-    }).catch(err => {
-        sendError('Code invalid !', res);
-    });
+    }).catch(() => sendError('', res));
 });
 
 router.delete('/login', (req: express.Request, res: express.Response) => {
@@ -146,11 +145,5 @@ router.delete('/login', (req: express.Request, res: express.Response) => {
 router.get('/login', (req: express.Request, res: express.Response) => {
     PendingUser.find().then(data => res.send(data));
 });
-
-function hash(data: string): string {
-    const h = crypto.createHash('sha256');
-    h.update(data);
-    return h.digest('hex');
-}
 
 export = router;
