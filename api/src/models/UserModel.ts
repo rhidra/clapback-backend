@@ -43,7 +43,7 @@ UserSchema.methods.generateJWT = function() {
         phone: this.phone,
         id: this._id,
         permissions: this.permissions,
-    }, process.env.JWT_SECRET, {expiresIn: 10});
+    }, process.env.JWT_SECRET, {expiresIn: 300});
 };
 
 UserSchema.methods.toAuthJSON = function() {
