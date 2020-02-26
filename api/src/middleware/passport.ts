@@ -12,7 +12,7 @@ const delaySize = 30;
  * Used for classic login authentication email/password
  */
 passport.use('email', new LocalStrategy({usernameField: 'email'}, (email: string, password: string, done) => {
-    UserModel.findOne({ email })
+    UserModel.findOne({ email }).select('+hash +salt')
         .then((user: any) => {
             if (!user || !user.validatePassword(password)) {
                 return done(null, false, {errors: {'email or password': 'is invalid'}} as unknown as IVerifyOptions);

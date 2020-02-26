@@ -74,15 +74,6 @@ router.post('/token/reject', auth, guard.check('admin'), (req: express.Request, 
     });
 });
 
-// TODO: Encapsulate admin user edit API in its own user API
-/**
- * POST /auth/user/:id
- * Edit a user
- */
-router.post('/user/:id', auth, guard.check('admin'), (req: express.Request, res: express.Response) => {
-    UserModel.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res));
-});
-
 // TODO: Remove this route
 router.get('/data', auth, guard.check('user'), (req, res) => {
     console.log(req);

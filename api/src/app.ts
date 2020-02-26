@@ -11,9 +11,9 @@ import auth from './middleware/passport';
 import cors from 'cors';
 import indexRouter from './routes/index';
 import newsRouter from './routes/news';
+import userRouter from './routes/user';
 import mediaRouter from './routes/media';
 import authRouter from './routes/auth';
-import jwt from 'express-jwt';
 
 const port = process.env.SERVER_PORT;
 const app = express();
@@ -35,6 +35,7 @@ app.use(auth.initialize());
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/news', newsRouter);
+app.use('/user', userRouter);
 app.use('/media', mediaRouter);
 
 // Catch 404 and forward to error handler

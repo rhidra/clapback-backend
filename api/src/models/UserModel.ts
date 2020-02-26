@@ -21,10 +21,16 @@ const UserSchema = new Schema({
     },
 
     // Hashed password
-    hash: String,
+    hash: {
+        type: String,
+        select: false,
+    },
 
     // Random string added to the password hash
-    salt: String,
+    salt: {
+      type: String,
+      select: false,
+    },
 });
 
 UserSchema.methods.setPassword = function(password: string) {
@@ -62,4 +68,5 @@ UserSchema.methods.addPermission = function(perm: string) {
     }
 };
 
-export = mongoose.model('User', UserSchema);
+const User = mongoose.model('User', UserSchema);
+export = User;
