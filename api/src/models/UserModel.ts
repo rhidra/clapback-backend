@@ -57,12 +57,12 @@ UserSchema.methods.toAuthJSON = function() {
         id: this._id,
         email: this.email,
         phone: this.phone,
+        permissions: this.permissions,
         token: this.generateJWT(),
     };
 };
 
 UserSchema.methods.addPermission = function(perm: string) {
-    console.log(this);
     if (!this.permissions.find((p: string) => p === perm)) {
         this.permissions.push(perm);
     }
