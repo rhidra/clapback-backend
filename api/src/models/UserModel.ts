@@ -19,9 +19,9 @@ const UserSchema = new Schema({
     // Format: ['user', 'admin']
     // admin: superuser who has all rights
     // editor: approve content for publishing
-    // expert: upload content
+    // creator: upload content
     // user: basic user
-    permissions: { type: [String], required: true, default: ['user'], enum: ['user', 'expert', 'editor', 'admin'] },
+    permissions: { type: [String], required: true, default: ['user'], enum: ['user', 'creator', 'editor', 'admin'] },
 
     // Hashed password
     hash: { type: String, select: false },
@@ -42,9 +42,9 @@ UserSchema.methods.validatePassword = function(password: string) {
 
 UserSchema.methods.generateJWT = function() {
     return jwt.sign({
+        _id: this._id,
         email: this.email,
         phone: this.phone,
-        id: this._id,
         permissions: this.permissions,
     }, process.env.JWT_SECRET, {expiresIn: 300});
 };

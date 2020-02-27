@@ -10,7 +10,7 @@ import bodyParser = require('body-parser');
 import auth from './middleware/passport';
 import cors from 'cors';
 import indexRouter from './routes/index';
-import newsRouter from './routes/news';
+import topicRouter from './routes/topic';
 import userRouter from './routes/user';
 import mediaRouter from './routes/media';
 import authRouter from './routes/auth';
@@ -34,7 +34,7 @@ app.use(auth.initialize());
 
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
-app.use('/news', newsRouter);
+app.use('/topic', topicRouter);
 app.use('/user', userRouter);
 app.use('/media', mediaRouter);
 

@@ -8,6 +8,7 @@ const NewsTopicSchema = new Schema({
     author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     video: { type: String, required: true },
     hashtag: { type: String, required: true },
+    approved: { type: Boolean, default: false },
     date: { type: Date, required: true },
 
     leftPanel: {
