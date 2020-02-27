@@ -1,15 +1,17 @@
-import * as express from 'express';
-import mongoose from 'mongoose';
 import NewsItem from '../models/NewsItemModel';
 import NewsGroup from '../models/NewsGroupModel';
 import moment from 'moment';
-import upload from '../middleware/upload';
 import {handleError, sendData, sendData_cb} from '../middleware/utils';
+import jwt from 'express-jwt';
+import express_jwt_permissions from 'express-jwt-permissions';
+import {Router} from 'express';
 
-const db = mongoose.connection;
-const router = express.Router();
+const router = Router();
+const auth = jwt({secret: process.env.JWT_SECRET});
+const guard = express_jwt_permissions();
 
-/** /news/latest
+/**
+ * /news/latest
  * Send the latest news group that is not in the future.
  */
 router.route('/latest')
@@ -26,12 +28,14 @@ router.route('/latest')
 
 router.route('/item')
     .get((req, res) => NewsItem.find({}, sendData_cb(res)))
-    .post((req, res) => NewsItem.create(req.body, sendData_cb(res)));
+    .post(auth, guard.check([['editor'], ['admin']]), (req, res) => NewsItem.create(req.body, sendData_cb(res)));
 
 router.route('/item/:id')
     .get((req, res) => NewsItem.findById(req.params.id, sendData_cb(res)))
-    .post((req, res) => NewsItem.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res)))
-    .delete((req, res) => NewsItem.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));
+    .post(auth, guard.check([['editor'], ['admin']]),
+      (req, res) => NewsItem.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res)))
+    .delete(auth, guard.check([['editor'], ['admin']]),
+      (req, res) => NewsItem.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));
 
 /**
  * GET /news/group?all={true|false}
@@ -53,7 +57,7 @@ router.route('/group')
         .catch(err => handleError(err, res))
         .then(groups => sendData(res, null, groups))
     )
-    .post((req, res) => NewsGroup.create(req.body, sendData_cb(res)));
+    .post(auth, guard.check([['editor'], ['admin']]), (req, res) => NewsGroup.create(req.body, sendData_cb(res)));
 
 /**
  * GET      /news/group/:id
@@ -70,7 +74,9 @@ router.route('/group/:id')
             res.send(Object.assign({items}, group._doc));
         });
     }))
-    .post((req, res) => NewsGroup.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res)))
-    .delete((req, res) => NewsGroup.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));
+    .post(auth, guard.check([['editor'], ['admin']]),
+      (req, res) => NewsGroup.findOneAndUpdate({_id: req.params.id}, req.body, {}, sendData_cb(res)))
+    .delete(auth, guard.check([['editor'], ['admin']]),
+      (req, res) => NewsGroup.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));
 
 export = router;

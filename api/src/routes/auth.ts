@@ -1,5 +1,5 @@
 import * as express from 'express';
-import {sendData_cb, sendError, sendSuccess, hash} from '../middleware/utils';
+import {sendError, sendSuccess, hash} from '../middleware/utils';
 import PendingUser from '../models/PendingUserModel';
 import RefreshTokenModel from '../models/RefreshTokenModel';
 import moment from 'moment';
@@ -127,14 +127,6 @@ router.post('/phone/login', passport.authenticate('phone'), (req: express.Reques
             });
         }
     }).catch(() => sendError('', res));
-});
-
-router.delete('/login', (req: express.Request, res: express.Response) => {
-    PendingUser.remove({}, err => res.send(err));
-});
-
-router.get('/login', (req: express.Request, res: express.Response) => {
-    PendingUser.find().then(data => res.send(data));
 });
 
 export = router;

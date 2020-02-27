@@ -1,5 +1,4 @@
 import upload from '../middleware/upload';
-import * as express from 'express';
 import fs from 'fs';
 import Jimp from 'jimp';
 import uuidv4 from 'uuid/v4';
@@ -13,8 +12,13 @@ import {
     sendSuccess
 } from '../middleware/utils';
 import * as path from 'path';
+import jwt from 'express-jwt';
+import express_jwt_permissions from 'express-jwt-permissions';
+import {Router, Request} from 'express';
 
-const router = express.Router();
+const router = Router();
+const auth = jwt({secret: process.env.JWT_SECRET});
+const guard = express_jwt_permissions();
 
 // Media file supported format
 const supportedImages = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif'];
@@ -26,7 +30,7 @@ class ImageOptions {
     height: number;
 }
 
-function extractOptions(req: express.Request) {
+function extractOptions(req: Request) {
     const opt = new ImageOptions();
     opt.quality = +req.query.quality ? clamp(+req.query.quality, 0, 100) : undefined;
     opt.width = +req.query.width ? clamp(+req.query.width, 0) : undefined;
@@ -54,7 +58,7 @@ function modifyImage(image: any, filename: string, opt: ImageOptions) {
  * Delete a file on the disk
  */
 
-router.post('/', upload.single('media'), (req, res) => {
+router.post('/', auth, upload.single('media'), (req, res) => {
     if (!req.file) {
         sendError('No media received !', res);
     }
