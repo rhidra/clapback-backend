@@ -5,32 +5,29 @@ import jwt from 'jsonwebtoken';
 const { Schema } = mongoose;
 
 const UserSchema = new Schema({
+    name: String,
     email: String,
     phone: String,
+
+    // Badge level of a user
+    level: { type: String, required: true, default: 'level1', enum: ['level1', 'level2', 'level3'] },
+
+    // Is the user a member of the ZuoYou team ?
+    verified: { type: Boolean, default: false },
 
     // Permissions granted to the user
     // Format: ['user', 'admin']
     // admin: superuser who has all rights
-    // editor: has access to basic editing function
+    // editor: approve content for publishing
+    // expert: upload content
     // user: basic user
-    permissions: {
-        type: [String],
-        required: true,
-        default: ['user'],
-        enum: ['user', 'editor', 'admin'],
-    },
+    permissions: { type: [String], required: true, default: ['user'], enum: ['user', 'expert', 'editor', 'admin'] },
 
     // Hashed password
-    hash: {
-        type: String,
-        select: false,
-    },
+    hash: { type: String, select: false },
 
     // Random string added to the password hash
-    salt: {
-      type: String,
-      select: false,
-    },
+    salt: { type: String, select: false },
 });
 
 UserSchema.methods.setPassword = function(password: string) {
@@ -54,10 +51,15 @@ UserSchema.methods.generateJWT = function() {
 
 UserSchema.methods.toAuthJSON = function() {
     return {
-        id: this._id,
-        email: this.email,
-        phone: this.phone,
-        permissions: this.permissions,
+        user: {
+            _id: this._id,
+            name: this.name,
+            email: this.email,
+            phone: this.phone,
+            level: this.level,
+            verified: this.verified,
+            permissions: this.permissions,
+        },
         token: this.generateJWT(),
     };
 };
