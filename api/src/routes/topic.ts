@@ -12,7 +12,7 @@ const guard = express_jwt_permissions();
 router.route('/')
   // Retrieve news topics
   .get(notAuth, (req, res) =>
-    Topic.find({approved: req.query.approved || !req.user || !(req.user as any).permissions.include('creator')},
+    Topic.find({approved: req.query.approved || !req.user || !(req.user as any).permissions.includes('creator')},
       sendData_cb(res)).sort({date: 'asc'}))
 
   // Create a news topic
@@ -27,7 +27,7 @@ router.route('/')
 router.route('/:id')
   // Retrieve a specific news topic
   .get(notAuth, (req, res) => Topic.findById(req.params.id).then((topic: any) => {
-    if ((!req.user || !(req.user as any).permissions.include('creator')) && !topic.approved) {
+    if ((!req.user || !(req.user as any).permissions.includes('creator')) && !topic.approved) {
       return sendError('Unauthorized', res, 403);
     }
     return sendData(res, null, topic);
