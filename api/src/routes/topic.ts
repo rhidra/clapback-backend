@@ -12,7 +12,7 @@ const guard = express_jwt_permissions();
 router.route('/')
   // Retrieve news topics
   .get(notAuth, (req, res) => Topic.find(req.query.approved || !req.user || !(req.user as any).permissions.includes('creator') ?
-      {approved: true} : {}, sendData_cb(res)).sort({date: 'asc'}))
+      {approved: true} : {}, sendData_cb(res)).sort({date: 'desc'}))
 
   // Create a news topic
   .post(auth, guard.check('creator'), (req, res) => Topic.create(req.body).then((topic: any) => {
