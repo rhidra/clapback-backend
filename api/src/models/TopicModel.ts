@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-const NewsTopicSchema = new Schema({
+const TopicSchema = new Schema({
     title: String,
 
     author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -26,4 +26,4 @@ const NewsTopicSchema = new Schema({
     },
 });
 
-export = mongoose.model('NewsTopic', NewsTopicSchema);
+export = mongoose.model('Topic', TopicSchema);
