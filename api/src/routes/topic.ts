@@ -22,7 +22,7 @@ router.route('/')
       topic.save();
     }
     return sendData(res, null, topic);
-  }));
+  }).catch(err => sendError(err, res)));
 
 router.route('/:id')
   // Retrieve a specific news topic
@@ -41,7 +41,7 @@ router.route('/:id')
         topic.save();
       }
       return sendData(res, null, topic);
-    }))
+    }).catch(err => sendError(err, res)))
 
   // Delete a specific news topic
   .delete(auth, guard.check('editor'), (req, res) => Topic.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));
