@@ -1,5 +1,5 @@
 import Topic from '../models/TopicModel';
-import {handleError, sendData, sendData_cb, sendError} from '../middleware/utils';
+import {sendData, sendData_cb, sendError} from '../middleware/utils';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Router} from 'express';
@@ -10,9 +10,24 @@ const notAuth = jwt({secret: process.env.JWT_SECRET, credentialsRequired: false}
 const guard = express_jwt_permissions();
 
 router.route('/')
-  // Retrieve news topics
-  .get(notAuth, (req, res) => Topic.find(req.query.approved || !req.user || !(req.user as any).permissions.includes('creator') ?
-      {approved: true} : {}, sendData_cb(res)).sort({date: 'desc'}))
+
+  /**
+   * GET /topic/
+   * Retrieves all news topic
+   * @param approved Only approved topics
+   * @param populate Populate the author fields in each panel
+   */
+  .get(notAuth, (req, res) => Topic
+    .find(req.query.approved || !req.user || !(req.user as any).permissions.includes('creator') ? {approved: true} : {})
+    .sort({date: 'desc'})
+    .then(docs => {
+      if (req.query.populate) {
+        return Promise.all(docs.map(e => e.populate('centerPanel.author')
+          .populate('leftPanel.author').populate('rightPanel.author').execPopulate()));
+      }
+      return new Promise(r => r(docs));
+    })
+    .then(docs => sendData(res, null, docs)))
 
   // Create a news topic
   .post(auth, guard.check('creator'), (req, res) => Topic.create(req.body).then((topic: any) => {
