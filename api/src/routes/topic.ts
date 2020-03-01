@@ -18,16 +18,17 @@ router.route('/')
    * @param populate Populate the author fields in each panel
    */
   .get(notAuth, (req, res) => Topic
-    .find(req.query.approved || !req.user || !(req.user as any).permissions.includes('creator') ? {approved: true} : {})
+    .find((req.query.approved && req.query.approved === 'true') || !req.user || !(req.user as any).permissions.includes('creator') ? {approved: true} : {})
     .sort({date: 'desc'})
     .then(docs => {
-      if (req.query.populate) {
+      if (req.query.populate && req.query.populate === 'true') {
         return Promise.all(docs.map(e => e.populate('centerPanel.author')
           .populate('leftPanel.author').populate('rightPanel.author').execPopulate()));
       }
       return new Promise(r => r(docs));
     })
-    .then(docs => sendData(res, null, docs)))
+    .then(docs => sendData(res, null, docs))
+  )
 
   // Create a news topic
   .post(auth, guard.check('creator'), (req, res) => Topic.create(req.body).then((topic: any) => {
@@ -39,13 +40,26 @@ router.route('/')
   }).catch(err => sendError(err, res)));
 
 router.route('/:id')
-  // Retrieve a specific news topic
-  .get(notAuth, (req, res) => Topic.findById(req.params.id).then((topic: any) => {
-    if ((!req.user || !(req.user as any).permissions.includes('creator')) && !topic.approved) {
-      return sendError('Unauthorized', res, 403);
-    }
-    return sendData(res, null, topic);
-  }))
+/**
+ * GET /topic/:id
+ * Retrieve a specific news topic
+ * @param populate Populate the author field in each panel
+ */
+  .get(notAuth, (req, res) => Topic.findById(req.params.id)
+    .then(topic =>  {
+      if (req.query.populate && req.query.populate === 'true') {
+        return topic.populate('centerPanel.author')
+          .populate('leftPanel.author').populate('rightPanel.author').execPopulate();
+      }
+      return new Promise(r => r(topic));
+    })
+    .then((topic: any) => {
+      if ((!req.user || !(req.user as any).permissions.includes('creator')) && !topic.approved) {
+        return sendError('Unauthorized', res, 403);
+      }
+      return sendData(res, null, topic);
+    })
+  )
 
   // Modify a specific news topic
   .post(auth, guard.check('creator'),
