@@ -10,8 +10,8 @@ export function handleError(err: mongoose.Error | any, res: express.Response, er
     }
 }
 
-export function sendData_cb(res: express.Response, cb= (a: any) => a) {
-    return (err: mongoose.Error, data: any) => {
+export function sendData_cb(res: express.Response, cb = (a: any) => a) {
+    return (err: mongoose.Error, data: any = {}) => {
         this.handleError(err, res);
         data = cb(data);
         res.send(data);
