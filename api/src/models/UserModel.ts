@@ -8,6 +8,7 @@ const UserSchema = new Schema({
     name: String,
     email: String,
     phone: String,
+    image: String,
 
     // Badge level of a user
     level: { type: String, required: true, default: 'level1', enum: ['level1', 'level2', 'level3'] },
@@ -56,6 +57,7 @@ UserSchema.methods.toAuthJSON = function() {
             name: this.name,
             email: this.email,
             phone: this.phone,
+            image: this.image,
             level: this.level,
             verified: this.verified,
             permissions: this.permissions,
