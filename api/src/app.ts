@@ -12,6 +12,7 @@ import cors from 'cors';
 import indexRouter from './routes/index';
 import topicRouter from './routes/topic';
 import likeRouter from './routes/like';
+import quizRouter from './routes/quiz';
 import userRouter from './routes/user';
 import mediaRouter from './routes/media';
 import authRouter from './routes/auth';
@@ -37,6 +38,7 @@ app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/topic', topicRouter);
 app.use('/like', likeRouter);
+app.use('/quiz', quizRouter);
 app.use('/user', userRouter);
 app.use('/media', mediaRouter);
 
