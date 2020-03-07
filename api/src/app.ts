@@ -13,6 +13,7 @@ import indexRouter from './routes/index';
 import topicRouter from './routes/topic';
 import likeRouter from './routes/like';
 import quizRouter from './routes/quiz';
+import voteRouter from './routes/vote';
 import userRouter from './routes/user';
 import mediaRouter from './routes/media';
 import authRouter from './routes/auth';
@@ -39,6 +40,7 @@ app.use('/auth', authRouter);
 app.use('/topic', topicRouter);
 app.use('/like', likeRouter);
 app.use('/quiz', quizRouter);
+app.use('/quiz/vote', voteRouter);
 app.use('/user', userRouter);
 app.use('/media', mediaRouter);
 

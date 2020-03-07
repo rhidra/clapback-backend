@@ -6,11 +6,11 @@ const Schema = mongoose.Schema;
  * Represents the vote of a user to a quiz.
  */
 const VoteSchema = new Schema({
-    quiz: { type: Schema.Types.ObjectId, ref: 'Quiz' },
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    quiz: { type: Schema.Types.ObjectId, ref: 'Quiz', required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 
-    // Index of the choice of the user in Quizz.choices[]
-    choice: Number,
+    // ID of the choice of the user in Quizz.choices[]
+    choice: { type: Schema.Types.ObjectId, required: true},
 });
 
 export = mongoose.model('Vote', VoteSchema);
