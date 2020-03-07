@@ -22,7 +22,7 @@ router.route('/')
   .post(auth, guard.check('creator'), (req, res) => Quiz.create(req.body, sendData_cb(res)));
 
 router.route('/:id')
-  .get(auth, guard.check('creator'), (req, res) => Quiz.findById(req.params.id, sendData_cb(res)))
+  .get((req, res) => Quiz.findById(req.params.id, sendData_cb(res)))
 
   /**
    * POST /quiz/:id
