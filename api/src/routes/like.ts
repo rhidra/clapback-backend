@@ -9,6 +9,9 @@ const auth = jwt({secret: process.env.JWT_SECRET});
 const notAuth = jwt({secret: process.env.JWT_SECRET, credentialsRequired: false});
 const guard = express_jwt_permissions();
 
+/**
+ * /like/topic
+ */
 router.route('/topic')
   // Check if a like to a topic exists
   .get(auth, guard.check('user'), (req, res) => Like
