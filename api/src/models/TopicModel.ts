@@ -17,6 +17,7 @@ const TopicSchema = new Schema({
     leftPanel: {
         video: String,
         text: String,
+        textAlt: String,
         image: String,
         quiz: { type: Schema.Types.ObjectId, ref: 'Quiz' },
         author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -25,6 +26,7 @@ const TopicSchema = new Schema({
     rightPanel: {
         video: String,
         text: String,
+        textAlt: String,
         image: String,
         quiz: { type: Schema.Types.ObjectId, ref: 'Quiz' },
         author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
