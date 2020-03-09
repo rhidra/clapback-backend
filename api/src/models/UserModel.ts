@@ -17,8 +17,8 @@ const UserSchema = new Schema({
     verified: { type: Boolean, default: false },
 
     // Does the email adress really belongs to the user ?
-    emailToken: { type: String, required: true, default: () => crypto.randomBytes(32).toString('hex')},
     emailValidated: { type: Boolean, default: false },
+    emailToken: { type: String, required: true, default: () => crypto.randomBytes(32).toString('hex')},
 
     // Permissions granted to the user
     // Format: ['user', 'admin']
