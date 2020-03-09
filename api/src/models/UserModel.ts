@@ -16,6 +16,10 @@ const UserSchema = new Schema({
     // Is the user a member of the ZuoYou team ?
     verified: { type: Boolean, default: false },
 
+    // Does the email adress really belongs to the user ?
+    emailToken: { type: String, required: true, default: () => crypto.randomBytes(32).toString('hex')},
+    emailValidated: { type: Boolean, default: false },
+
     // Permissions granted to the user
     // Format: ['user', 'admin']
     // admin: superuser who has all rights
