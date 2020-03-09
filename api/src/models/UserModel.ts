@@ -16,10 +16,6 @@ const UserSchema = new Schema({
     // Is the user a member of the ZuoYou team ?
     verified: { type: Boolean, default: false },
 
-    // Does the email adress really belongs to the user ?
-    emailValidated: { type: Boolean, default: false },
-    emailToken: { type: String, required: true, default: () => crypto.randomBytes(32).toString('hex')},
-
     // Permissions granted to the user
     // Format: ['user', 'admin']
     // admin: superuser who has all rights
@@ -27,27 +23,11 @@ const UserSchema = new Schema({
     // creator: upload content
     // user: basic user
     permissions: { type: [String], required: true, default: ['user'], enum: ['user', 'creator', 'editor', 'admin'] },
-
-    // Hashed password
-    hash: { type: String, select: false },
-
-    // Random string added to the password hash
-    salt: { type: String, select: false },
 });
-
-UserSchema.methods.setPassword = function(password: string) {
-    this.salt = crypto.randomBytes(16).toString('hex');
-    this.hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
-};
-
-UserSchema.methods.validatePassword = function(password: string) {
-    const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
-    return this.hash === hash;
-};
 
 UserSchema.methods.generateJWT = function() {
     return jwt.sign({
-        _id: this._id,
+        _id: this.user,
         email: this.email,
         phone: this.phone,
         permissions: this.permissions,

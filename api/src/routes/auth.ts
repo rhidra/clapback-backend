@@ -8,7 +8,7 @@ import jwt from 'express-jwt';
 import passport from '../middleware/passport';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Mailer} from '../middleware/mail';
-import crypto from 'crypto';
+import AuthUser from '../models/AuthUserModel';
 
 const guard = express_jwt_permissions();
 const router = express.Router();
@@ -27,14 +27,16 @@ router.post('/register', (req: express.Request, res: express.Response) => {
 
     const user: any = new User({email});
     user.addPermission('user');
-    user.setPassword(password);
-    user.save().then((newUser: Document) => {
+    const authUser: any = new AuthUser({user});
+    authUser.setPassword(password);
+
+    Promise.all([authUser.save(), user.save()]).then(newUser => {
       const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
       res.json(Object.assign({refreshToken}, user.toAuthJSON()));
 
       Mailer.sendMail(email, 'Welcome in 左右 !', 'registration.ejs', {
         email,
-        tokenUrl: process.env.HOST_URL + '/auth/email/' + (newUser as any).emailToken
+        tokenUrl: process.env.HOST_URL + '/auth/email/' + (newUser[0] as any).emailToken
       });
     });
   });
@@ -45,7 +47,7 @@ router.post('/register', (req: express.Request, res: express.Response) => {
  * Validate the email address of the corresponding user
  */
 router.get('/email/:token', (req, res) =>
-  User.findOne({emailValidated: false, emailToken: req.query.token}).then((user: any) => {
+  AuthUser.findOne({emailValidated: false, emailToken: req.query.token}).then((user: any) => {
     if (user) {
       user.emailToken = '';
       user.emailValidated = true;
@@ -61,10 +63,12 @@ router.get('/email/:token', (req, res) =>
  * Classic email/password login
  * @body {email, password}
  */
-router.post('/login', passport.authenticate('email'), (req: express.Request, res: express.Response) => {
-  const refreshToken: string = (RefreshTokenModel as any).generate((req.user as any).id);
-  res.json(Object.assign({refreshToken}, (req.user as any).toAuthJSON()));
-});
+router.post('/login', passport.authenticate('email'), (req, res) => User.findById((req.user as any).user)
+  .then((user: any) => {
+    const refreshToken: string = (RefreshTokenModel as any).generate((req.user as any).user);
+    res.json(Object.assign({refreshToken}, user.toAuthJSON()));
+  })
+);
 
 /**
  * POST /auth/reset
