@@ -67,6 +67,17 @@ router.post('/login', passport.authenticate('email'), (req: express.Request, res
 });
 
 /**
+ * POST /auth/reset
+ * Password reset for email/password login
+ * @body {email}
+ */
+router.post('/reset', (req, res) =>
+  User.findOne({email: req.body.email}).then(user => {
+    // TODO: Move the password related data in another model
+  })
+);
+
+/**
  * POST /auth/token
  * Send a new JWT token, useful when the previous token is expired.
  * Need a refresh token, created at login.
