@@ -100,12 +100,6 @@ router.post('/token/reject', auth, guard.check('admin'), (req: express.Request, 
   });
 });
 
-// TODO: Remove this route
-router.get('/data', auth, guard.check('user'), (req, res) => {
-  console.log(req);
-  res.json({data: 'success', user: req.user});
-});
-
 /**
  * SMS Phone Login protocol :
  * - App sends phone number to the backend :
