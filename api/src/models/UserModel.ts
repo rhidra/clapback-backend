@@ -27,7 +27,7 @@ const UserSchema = new Schema({
 
 UserSchema.methods.generateJWT = function() {
     return jwt.sign({
-        _id: this.user,
+        _id: this._id,
         email: this.email,
         phone: this.phone,
         permissions: this.permissions,
