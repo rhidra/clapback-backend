@@ -22,7 +22,7 @@ router.post('/register', (req: express.Request, res: express.Response) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) { return sendError('Email and password required !', res); }
-  User.findOne({email, emailValidated: true}).then(u => {
+  User.findOne({email}).then(u => {
     if (u) { return sendError('The email address already exists', res); }
 
     const user: any = new User({email});
