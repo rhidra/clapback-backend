@@ -6,10 +6,12 @@ const QuizSchema = new Schema({
     question: String,
     content: { type: String, required: false },
     topic: { type: Schema.Types.ObjectId, ref: 'NewsTopic' },
+    isPoll: { type: Boolean, default: false },
 
     choices: [{
         text: String,
         color: String,
+        goodAnswer: { type: Boolean, default: false },
     }],
 });
 
