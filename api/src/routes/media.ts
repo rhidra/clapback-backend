@@ -68,11 +68,11 @@ router.post('/', auth, upload.single('media'), (req, res) => {
 
     if (supportedImages.includes(ext)) {
         modifyImage(req.file.buffer, filename, opt)
-            .then(() => res.send({filename: buildUrl(filename, req.protocol, req.get('host'))}));
+            .then(() => res.send({filename: buildUrl(filename)}));
     } else if (supportedVideos.includes(ext)) {
         fs.mkdirSync('public/media/', {recursive: true} as any);
         fs.writeFileSync(buildPath(filename), req.file.buffer);
-        res.send({filename: buildUrl(filename, req.protocol, req.get('host'))});
+        res.send({filename: buildUrl(filename)});
     } else {
         sendError('File format unsupported !', res);
     }

@@ -62,8 +62,8 @@ export function buildPath(filename: string): string {
     return 'public/media/' + filename;
 }
 
-export function buildUrl(filename: string, protocol: string, host: string): string {
-    return protocol + '://' + host + '/media/' + filename;
+export function buildUrl(filename: string): string {
+    return '/media/' + filename;
 }
 
 export function getFilename(filename: string): string {
