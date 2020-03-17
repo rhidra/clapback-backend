@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const QuizSchema = new Schema({
     question: String,
     content: { type: String, required: false },
-    topic: { type: Schema.Types.ObjectId, ref: 'NewsTopic' },
+    topic: { type: Schema.Types.ObjectId, ref: 'Topic' },
     isPoll: { type: Boolean, default: false },
 
     choices: [{

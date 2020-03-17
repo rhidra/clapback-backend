@@ -8,7 +8,7 @@ const Schema = mongoose.Schema;
  * If it is a text, it is just a comment.
  */
 const ReactionSchema = new Schema({
-    topic: { type: Schema.Types.ObjectId, ref: 'NewsTopic' },
+    topic: { type: Schema.Types.ObjectId, ref: 'Topic' },
     user: { type: Schema.Types.ObjectId, ref: 'User' },
     date: { type: Date, required: true, default: Date.now },
 
