@@ -25,7 +25,7 @@ router.route('/')
         return Promise.all(docs.map(e => e.populate('centerPanel.author')
           .populate('leftPanel.author').populate('rightPanel.author').execPopulate()));
       }
-      return new Promise(r => r(docs));
+      return Promise.resolve(docs);
     })
     .then(docs => sendData(res, null, docs))
   )
