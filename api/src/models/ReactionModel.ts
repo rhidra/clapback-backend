@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 /**
  * A reaction of a user to a news topic.
- * If it is a video, it is a clapback.
+ * If it is a video (and an optional text), it is a clapback.
  * If it is a text, it is just a comment.
  */
 const ReactionSchema = new Schema({

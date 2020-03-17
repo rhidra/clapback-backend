@@ -17,6 +17,7 @@ import voteRouter from './routes/vote';
 import userRouter from './routes/user';
 import mediaRouter from './routes/media';
 import authRouter from './routes/auth';
+import reactRouter from './routes/reaction';
 
 const port = process.env.SERVER_PORT;
 const app = express();
@@ -43,6 +44,7 @@ app.use('/like', likeRouter);
 app.use('/quiz', quizRouter);
 app.use('/quiz/vote', voteRouter);
 app.use('/user', userRouter);
+app.use('/reaction', reactRouter);
 app.use('/media', mediaRouter);
 
 // Catch 404 and forward to error handler
