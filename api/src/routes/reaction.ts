@@ -8,6 +8,7 @@ import express_jwt_permissions from 'express-jwt-permissions';
 const db = mongoose.connection;
 const router = express.Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
+const notAuth = jwt({secret: process.env.JWT_SECRET, credentialsRequired: false});
 const guard = express_jwt_permissions();
 
 router.route('/')
@@ -19,9 +20,9 @@ router.route('/')
  * @param populate (optionnal)
  * @param topic Id of the topic (mandatory for users)
  */
-  .get(auth, guard.check('user'), (req, res) => {
+  .get(notAuth, (req, res) => {
     if (req.query.type !== 'video' && req.query.type !== 'text') { return sendError('Type wrong !', res, 400); }
-    if (!(req.user as any).permissions.includes('creator') && !req.query.topic) {
+    if ((!req.user || !(req.user as any).permissions.includes('creator')) && !req.query.topic) {
       return sendError('Topic unspecified', res, 400);
     }
 
