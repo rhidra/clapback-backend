@@ -1,5 +1,5 @@
 import * as express from 'express';
-import mongoose from 'mongoose';
+import mongoose, {MongooseDocument} from 'mongoose';
 import {sendData, sendData_cb, sendError} from '../middleware/utils';
 import Reaction from '../models/ReactionModel';
 import jwt from 'express-jwt';
@@ -17,19 +17,28 @@ router.route('/')
  * Send all reaction
  * @param type (mandatory) "video" for video-text reaction or "text" for text-only
  * @param populate (optionnal)
+ * @param topic Id of the topic (mandatory for users)
  */
   .get(auth, guard.check('user'), (req, res) => {
     if (req.query.type !== 'video' && req.query.type !== 'text') { return sendError('Type wrong !', res, 400); }
+    if (!(req.user as any).permissions.includes('creator') && !req.query.topic) {
+      return sendError('Topic unspecified', res, 400);
+    }
 
-    Reaction.find(req.query.type === 'video' ? {$and: [{video: {$ne: null}}, {video: {$ne: ''}}]}
-                                                        : {$or: [{video: null}, {video: ''}]})
+    const q: any = {};
+    if (req.query.topic) { q.topic = req.query.topic; }
+    if (req.query.type === 'video') { q.$and = [{video: {$ne: null}}, {video: {$ne: ''}}];
+    } else { q.$or = [{video: null}, {video: ''}]; }
+
+    Reaction.find(q)
       .then(docs => {
         if (req.query.populate && req.query.populate === 'true') {
           return Promise.all(docs.map(e => e.populate('user').populate('topic').execPopulate()));
         }
         return Promise.resolve(docs);
       })
-      .then(docs => sendData(res, null, docs));
+      .then(docs => sendData(res, null, docs))
+      .catch(err => sendError(err, res));
   })
 
 /**
