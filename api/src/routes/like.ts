@@ -61,4 +61,30 @@ router.route('/reaction')
     .catch(err => sendError(err, res, 500))
   );
 
+/**
+ * /like/comment
+ */
+router.route('/comment')
+// Check if a like to a comment exists
+  .get(auth, guard.check('user'), (req, res) => Like
+    .findOne({comment: req.query.comment, user: (req.user as any)._id}, sendData_cb(res)))
+
+  // Add a like to a comment
+  .post(auth, guard.check('user'), (req, res) => Like
+    .findOne({comment: req.body.comment, user: (req.user as any)._id}).then(duplicate => {
+      if (!duplicate) {
+        return Like.create({comment: req.body.comment, user: (req.user as any)._id}, sendData_cb(res));
+      }
+      return sendSuccess(res);
+    })
+  )
+
+  // Remove a like to a comment
+  .delete(auth, guard.check('user'), (req, res) => Like
+    .findOne({comment: req.body.comment, user: (req.user as any)._id})
+    .then(like => like.remove())
+    .then(data => sendData(res, null, data))
+    .catch(err => sendError(err, res, 500))
+  );
+
 export = router;
