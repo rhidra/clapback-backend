@@ -1,7 +1,7 @@
 import * as express from 'express';
 import mongoose, {MongooseDocument} from 'mongoose';
 import {sendData, sendData_cb, sendError} from '../middleware/utils';
-import Reaction from '../models/ReactionModel';
+import Comment from '../models/CommentModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 
@@ -14,23 +14,23 @@ const guard = express_jwt_permissions();
 router.route('/')
 
 /**
- * GET /reaction
- * Send all reaction
+ * GET /comment
+ * Send all comments
+ * @param topic (mandatory if no reaction)
+ * @param reaction (mandatory if no topic)
  * @param populate (optionnal)
- * @param topic Id of the topic (mandatory for users)
  */
   .get(notAuth, (req, res) => {
-    if ((!req.user || !(req.user as any).permissions.includes('creator')) && !req.query.topic) {
-      return sendError('Topic unspecified', res, 400);
-    }
+    if (!req.query.topic && !req.query.reaction) { return sendError('Topic or reaction unspecified', res, 400); }
 
     const q: any = {};
     if (req.query.topic) { q.topic = req.query.topic; }
+    if (req.query.reaction) { q.reaction = req.query.reaction; }
 
-    Reaction.find(q)
+    Comment.find(q)
       .then(docs => {
         if (req.query.populate && req.query.populate === 'true') {
-          return Promise.all(docs.map(e => e.populate('user').populate('topic').execPopulate()));
+          return Promise.all(docs.map(e => e.populate('user').populate('topic').populate('reaction').execPopulate()));
         }
         return Promise.resolve(docs);
       })
@@ -39,50 +39,55 @@ router.route('/')
   })
 
 /**
- * POST /reaction
- * Create a quiz. Full permissions to admins.
+ * POST /comment
+ * Create a comment. Full permissions to admins.
  */
   .post(auth, guard.check('user'), (req, res) => {
     if (!(req.user as any).permissions.includes('admin') && (req.user as any)._id !== req.body.user) {
       return sendError('Wrong user !', res);
     }
-    Reaction.create(req.body, sendData_cb(res));
+    Comment.create(req.body, sendData_cb(res));
   });
 
 router.route('/:id')
 /**
- * GET /reaction/:id
- * Send a reaction
+ * GET /comment/:id
+ * Send a comment
  */
-  .get((req, res) => Reaction.findById(req.params.id).populate('user').populate('topic').exec(sendData_cb(res)))
+  .get((req, res) => Comment
+    .findById(req.params.id)
+    .populate('user')
+    .populate('topic')
+    .populate('reaction')
+    .exec(sendData_cb(res)))
 
 /**
- * POST /reaction/:id
- * Modify a reaction. Allowed to editors.
+ * POST /comment/:id
+ * Modify a comment. Full permissions to editors.
  */
   .post(auth, guard.check('user'), (req, res) => {
     if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== req.body.user) {return sendError('Wrong user !', res, 403); }
-    Reaction.findById(req.params.id).then((reaction: any) => {
-      if (!reaction) {
-        return sendError('Reaction does not exist !', res, 400);
-      } else if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== reaction.user) {
+    Comment.findById(req.params.id).then((comment: any) => {
+      if (!comment) {
+        return sendError('Comment does not exist !', res, 400);
+      } else if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== comment.user) {
         return sendError('Wrong user !', res, 403);
       } else {
-        Object.assign(reaction, req.body);
-        reaction.save().then(sendData_cb(res));
+        Object.assign(comment, req.body);
+        comment.save().then(sendData_cb(res));
       }
     });
   })
 
 /**
- * DELETE /reaction/:id
- * Delete a reaction. Allowed to editors.
+ * DELETE /comment/:id
+ * Delete a comment. Full permissions to editors.
  */
   .delete(auth, guard.check('user'), (req, res) =>  {
     if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== req.body.user) {
       return sendError('Wrong user !', res, 403);
     }
-    Reaction.findOneAndDelete({_id: req.params.id}, sendData_cb(res));
+    Comment.findOneAndDelete({_id: req.params.id}, sendData_cb(res));
   });
 
 export = router;
