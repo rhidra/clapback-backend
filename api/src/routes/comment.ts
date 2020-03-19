@@ -87,7 +87,11 @@ router.route('/:id')
     if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== req.body.user) {
       return sendError('Wrong user !', res, 403);
     }
-    Comment.findOneAndDelete({_id: req.params.id}, sendData_cb(res));
+    Comment
+      .findById(req.params.id)
+      .then(comment => comment.remove())
+      .then(data => sendData(res, null, data))
+      .catch(err => sendError(err, res, 500));
   });
 
 export = router;

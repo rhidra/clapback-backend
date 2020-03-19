@@ -1,4 +1,7 @@
 import * as mongoose from 'mongoose';
+import Topic from './TopicModel';
+import {handleError} from '../middleware/utils';
+import Reaction from './ReactionModel';
 
 const Schema = mongoose.Schema;
 
@@ -17,6 +20,24 @@ const CommentSchema = new Schema({
     text: String,
 
     likesCounter: { type: Number, default: 0 },
+});
+
+CommentSchema.post('save', (doc: any) => {
+    if (doc.topic) {
+        Topic.findByIdAndUpdate(doc.topic, {$inc: {commentsCounter: 1}}, err => handleError(err));
+    }
+    if (doc.reaction) {
+        Reaction.findByIdAndUpdate(doc.reaction, {$inc: {commentsCounter: 1}}, err => handleError(err));
+    }
+});
+
+CommentSchema.post('remove', (doc: any) => {
+    if (doc.topic) {
+        Topic.findByIdAndUpdate(doc.topic, {$inc: {commentsCounter: -1}}, err => handleError(err));
+    }
+    if (doc.reaction) {
+        Reaction.findByIdAndUpdate(doc.reaction, {$inc: {commentsCounter: -1}}, err => handleError(err));
+    }
 });
 
 export = mongoose.model('Comment', CommentSchema);
