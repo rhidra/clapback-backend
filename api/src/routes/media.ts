@@ -39,7 +39,7 @@ function extractOptions(req: Request): [ImageOptions, boolean] {
     opt.quality = +req.query.quality ? clamp(+req.query.quality, 0, 100) : undefined;
     opt.width = +req.query.width ? clamp(+req.query.width, 0) : undefined;
     opt.height = +req.query.height ? clamp(+req.query.height, 0) : undefined;
-    const thumbnail = !!req.query.thumbnail;
+    const thumbnail = 'thumbnail' in req.query;
     return [opt, thumbnail];
 }
 
