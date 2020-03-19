@@ -3,10 +3,12 @@ import * as mongoose from 'mongoose';
 import crypto from 'crypto';
 
 /* ROUTING PATH */
-export function handleError(err: mongoose.Error | any, res: express.Response, errorCode: number = 500) {
-    if (err) {
+export function handleError(err: mongoose.Error | any, res?: express.Response, errorCode: number = 500) {
+    if (err && res) {
         res.status(errorCode);
         res.send(err);
+    } else if (err) {
+        console.error(err);
     }
     return !!err;
 }

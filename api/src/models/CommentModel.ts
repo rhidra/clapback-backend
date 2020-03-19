@@ -15,6 +15,8 @@ const CommentSchema = new Schema({
     reaction: { type: Schema.Types.ObjectId, ref: 'Reaction', required: false},
 
     text: String,
+
+    likesCounter: { type: Number, default: 0 },
 });
 
 export = mongoose.model('Comment', CommentSchema);

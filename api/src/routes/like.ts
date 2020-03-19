@@ -29,7 +29,10 @@ router.route('/topic')
 
   // Remove a like to a topic
   .delete(auth, guard.check('user'), (req, res) => Like
-    .deleteOne({topic: req.body.topic, user: (req.user as any)._id}, sendData_cb(res))
+    .findOne({topic: req.body.topic, user: (req.user as any)._id})
+    .then(like => like.remove())
+    .then(data => sendData(res, null, data))
+    .catch(err => sendError(err, res, 500))
   );
 
 /**
@@ -52,7 +55,10 @@ router.route('/reaction')
 
   // Remove a like to a reaction
   .delete(auth, guard.check('user'), (req, res) => Like
-    .deleteOne({reaction: req.body.reaction, user: (req.user as any)._id}, sendData_cb(res))
+    .findOne({reaction: req.body.reaction, user: (req.user as any)._id})
+    .then(like => like.remove())
+    .then(data => sendData(res, null, data))
+    .catch(err => sendError(err, res, 500))
   );
 
 export = router;

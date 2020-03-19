@@ -31,6 +31,11 @@ const TopicSchema = new Schema({
         quiz: { type: Schema.Types.ObjectId, ref: 'Quiz' },
         author: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     },
+
+    likesCounter: { type: Number, default: 0 },
+    commentsCounter: { type: Number, default: 0 },
+    clapbacksCounter: { type: Number, default: 0 },
+    viewsCounter: { type: Number, default: 0 },
 });
 
 export = mongoose.model('Topic', TopicSchema);

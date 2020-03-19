@@ -14,6 +14,10 @@ const ReactionSchema = new Schema({
 
     video: String,
     text: String,
+
+    likesCounter: { type: Number, default: 0 },
+    commentsCounter: { type: Number, default: 0 },
+    viewsCounter: { type: Number, default: 0 },
 });
 
 export = mongoose.model('Reaction', ReactionSchema);
