@@ -40,4 +40,19 @@ CommentSchema.post('remove', (doc: any) => {
     }
 });
 
+CommentSchema.methods.addHasLiked = function(userId: string): Promise<any> {
+  const doc: any = this.toJSON();
+  return mongoose
+    .model('Like')
+    .findOne({comment: this._id, user: userId}).exec()
+    .then((like: any) => {
+      if (like) {
+        doc.hasLiked = true;
+        return Promise.resolve(doc);
+      }
+      return Promise.resolve(this);
+    })
+    .catch(err => console.log('erreur', err));
+};
+
 export = mongoose.model('Comment', CommentSchema);

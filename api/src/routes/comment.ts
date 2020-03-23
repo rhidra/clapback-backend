@@ -30,10 +30,12 @@ router.route('/')
     Comment.find(q)
       .then(docs => {
         if (req.query.populate && req.query.populate === 'true') {
-          return Promise.all(docs.map(e => e.populate('user').populate('topic').populate('reaction').execPopulate()));
+          return Promise.all(docs.map(e => e.populate('user').execPopulate()));
         }
         return Promise.resolve(docs);
       })
+      .then(docs => req.user
+        ? Promise.all(docs.map((doc: any) => doc.addHasLiked((req.user as any)._id))) : Promise.resolve(docs))
       .then(docs => sendData(res, null, docs))
       .catch(err => sendError(err, res));
   })
