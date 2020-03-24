@@ -38,7 +38,6 @@ ReactionSchema.methods.addHasLiked = function(userId: string): Promise<any> {
     .model('Like')
     .findOne({reaction: this._id, user: userId}).exec()
     .then((like: any) => {
-      console.log('test', like);
       if (like) {
         doc.hasLiked = true;
         return Promise.resolve(doc);
