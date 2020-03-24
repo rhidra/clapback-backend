@@ -1,5 +1,5 @@
 import * as express from 'express';
-import mongoose, {MongooseDocument} from 'mongoose';
+import mongoose from 'mongoose';
 import {sendData, sendData_cb, sendError} from '../middleware/utils';
 import Reaction from '../models/ReactionModel';
 import jwt from 'express-jwt';
@@ -30,10 +30,12 @@ router.route('/')
     Reaction.find(q)
       .then(docs => {
         if (req.query.populate && req.query.populate === 'true') {
-          return Promise.all(docs.map(e => e.populate('user').populate('topic').execPopulate()));
+          return Promise.all(docs.map(e => e.populate('user').execPopulate()));
         }
         return Promise.resolve(docs);
       })
+      .then(docs => req.user
+        ? Promise.all(docs.map((doc: any) => doc.addHasLiked((req.user as any)._id))) : Promise.resolve(docs))
       .then(docs => sendData(res, null, docs))
       .catch(err => sendError(err, res));
   })
@@ -54,7 +56,12 @@ router.route('/:id')
  * GET /reaction/:id
  * Send a reaction
  */
-  .get((req, res) => Reaction.findById(req.params.id).populate('user').populate('topic').exec(sendData_cb(res)))
+  .get(notAuth, (req, res) => Reaction
+    .findById(req.params.id)
+    .populate('user')
+    .exec()
+    .then((doc: any) => req.user ? doc.addHasLiked((req.user as any)._id) : Promise.resolve(doc))
+    .then(doc => sendData(res, null, doc)))
 
 /**
  * POST /reaction/:id
