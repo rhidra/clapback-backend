@@ -56,12 +56,12 @@ router.route('/:id')
  * GET /comment/:id
  * Send a comment
  */
-  .get((req, res) => Comment
+  .get(notAuth, (req, res) => Comment
     .findById(req.params.id)
     .populate('user')
-    .populate('topic')
-    .populate('reaction')
-    .exec(sendData_cb(res)))
+    .exec()
+    .then((doc: any) => req.user ? doc.addHasLiked((req.user as any)._id) : Promise.resolve(doc))
+    .then(doc => sendData(res, null, doc)))
 
 /**
  * POST /comment/:id
