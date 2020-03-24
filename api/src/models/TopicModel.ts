@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import {addHasLiked} from '../middleware/utils';
 
 const Schema = mongoose.Schema;
 
@@ -37,5 +38,9 @@ const TopicSchema = new Schema({
     clapbacksCounter: { type: Number, default: 0 },
     viewsCounter: { type: Number, default: 0 },
 });
+
+TopicSchema.methods.addHasLiked = function(userId: string): Promise<any> {
+    return addHasLiked(this, 'topic', userId);
+};
 
 export = mongoose.model('Topic', TopicSchema);

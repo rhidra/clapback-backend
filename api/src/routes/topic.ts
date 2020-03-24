@@ -27,6 +27,8 @@ router.route('/')
       }
       return Promise.resolve(docs);
     })
+    .then(docs => req.user
+      ? Promise.all(docs.map((doc: any) => doc.addHasLiked((req.user as any)._id))) : Promise.resolve(docs))
     .then(docs => sendData(res, null, docs))
   )
 
@@ -53,6 +55,7 @@ router.route('/:id')
       }
       return new Promise(r => r(topic));
     })
+    .then((doc: any) => req.user ? doc.addHasLiked((req.user as any)._id) : Promise.resolve(doc))
     .then((topic: any) => {
       if ((!req.user || !(req.user as any).permissions.includes('creator')) && !topic.approved) {
         return sendError('Unauthorized', res, 403);
