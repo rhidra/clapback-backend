@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import Topic from './TopicModel';
-import {handleError} from '../middleware/utils';
+import {addHasLiked, handleError} from '../middleware/utils';
 
 const Schema = mongoose.Schema;
 
@@ -33,18 +33,7 @@ ReactionSchema.post('remove', (doc: any) => {
 });
 
 ReactionSchema.methods.addHasLiked = function(userId: string): Promise<any> {
-  const doc: any = this.toJSON();
-  return mongoose
-    .model('Like')
-    .findOne({reaction: this._id, user: userId}).exec()
-    .then((like: any) => {
-      if (like) {
-        doc.hasLiked = true;
-        return Promise.resolve(doc);
-      }
-      return Promise.resolve(this);
-    })
-    .catch(err => console.log('erreur', err));
+  return addHasLiked(this, 'reaction', userId);
 };
 
 export = mongoose.model('Reaction', ReactionSchema);
