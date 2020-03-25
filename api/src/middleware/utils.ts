@@ -70,12 +70,12 @@ export function hash(data: string): string {
 }
 
 /* MEDIA SERVER */
-export function buildModifiedFilename(filename: string, opt: any) {
+export function buildModifiedFilename(filename: string, opt: any, extension: string = getExtension(filename)) {
   return getFilename(filename)
     + (opt.quality ? '_q' + opt.quality : '')
     + (opt.width ? '_w' + opt.width : '')
     + (opt.height ? '_h' + opt.height : '')
-    + '.' + getExtension(filename);
+    + '.' + extension;
 }
 
 export function buildPath(filename: string): string {
