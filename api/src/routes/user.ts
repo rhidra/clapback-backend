@@ -22,12 +22,7 @@ router.route('/')
   .post(auth, guard.check('admin'), (req, res) => User.create(req.body, sendData_cb(res)));
 
 router.route('/:id')
-  .get(auth, guard.check('user'), (req, res) => User.findById(req.params.id).then(user => {
-    if (!(req.user as any).permissions.includes('admin') && (req.user as any)._id !== req.params.id) {
-      return sendError('Unauthorized', res, 403);
-    }
-    return sendData(res, null, user);
-  }))
+  .get(auth, guard.check('user'), (req, res) => User.findById(req.params.id, sendData_cb(res)))
 
   /**
    * POST /user/:id

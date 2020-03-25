@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import Topic from './TopicModel';
 import {addHasLiked, handleError} from '../middleware/utils';
 import Reaction from './ReactionModel';
+import User from './UserModel';
 
 const Schema = mongoose.Schema;
 
@@ -29,6 +30,7 @@ CommentSchema.post('save', (doc: any) => {
     if (doc.reaction) {
         Reaction.findByIdAndUpdate(doc.reaction, {$inc: {commentsCounter: 1}}, err => handleError(err));
     }
+    User.findByIdAndUpdate(doc.user, {$inc: {commentsCounter: 1}}, err => handleError(err));
 });
 
 CommentSchema.post('remove', (doc: any) => {
@@ -38,6 +40,7 @@ CommentSchema.post('remove', (doc: any) => {
     if (doc.reaction) {
         Reaction.findByIdAndUpdate(doc.reaction, {$inc: {commentsCounter: -1}}, err => handleError(err));
     }
+    User.findByIdAndUpdate(doc.user, {$inc: {commentsCounter: -1}}, err => handleError(err));
 });
 
 CommentSchema.methods.addHasLiked = function(userId: string): Promise<any> {

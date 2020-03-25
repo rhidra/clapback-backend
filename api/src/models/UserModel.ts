@@ -9,6 +9,7 @@ const UserSchema = new Schema({
     email: String,
     phone: String,
     image: String,
+    description: String,
 
     // Badge level of a user
     level: { type: String, required: true, default: 'level1', enum: ['level1', 'level2', 'level3'] },
@@ -23,6 +24,11 @@ const UserSchema = new Schema({
     // creator: upload content
     // user: basic user
     permissions: { type: [String], required: true, default: ['user'], enum: ['user', 'creator', 'editor', 'admin'] },
+
+    viewsCounter: { type: Number, default: 0 },
+    likesCounter: { type: Number, default: 0 },
+    clapbacksCounter: { type: Number, default: 0 },
+    commentsCounter: { type: Number, default: 0 },
 });
 
 UserSchema.methods.generateJWT = function() {
@@ -42,9 +48,14 @@ UserSchema.methods.toAuthJSON = function() {
             email: this.email,
             phone: this.phone,
             image: this.image,
+            description: this.description,
             level: this.level,
             verified: this.verified,
             permissions: this.permissions,
+            viewsCounter: this.viewsCounter,
+            likesCounter: this.likesCounter,
+            clapbacksCounter: this.clapbacksCounter,
+            commentsCounter: this.commentsCounter,
         },
         token: this.generateJWT(),
     };

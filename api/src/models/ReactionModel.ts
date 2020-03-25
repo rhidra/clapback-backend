@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import Topic from './TopicModel';
 import {addHasLiked, handleError} from '../middleware/utils';
+import User from './UserModel';
 
 const Schema = mongoose.Schema;
 
@@ -24,12 +25,14 @@ ReactionSchema.post('save', (doc: any) => {
   if (doc.topic) {
     Topic.findByIdAndUpdate(doc.topic, {$inc: {clapbacksCounter: 1}}, err => handleError(err));
   }
+  User.findByIdAndUpdate(doc.user, {$inc: {clapbacksCounter: 1}}, err => handleError(err));
 });
 
 ReactionSchema.post('remove', (doc: any) => {
   if (doc.topic) {
     Topic.findByIdAndUpdate(doc.topic, {$inc: {clapbacksCounter: -1}}, err => handleError(err));
   }
+  User.findByIdAndUpdate(doc.user, {$inc: {clapbacksCounter: -1}}, err => handleError(err));
 });
 
 ReactionSchema.methods.addHasLiked = function(userId: string): Promise<any> {

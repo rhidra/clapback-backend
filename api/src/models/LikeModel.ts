@@ -3,6 +3,7 @@ import Topic from './TopicModel';
 import Reaction from './ReactionModel';
 import Comment from './CommentModel';
 import {handleError} from '../middleware/utils';
+import User from './UserModel';
 
 const Schema = mongoose.Schema;
 
@@ -27,6 +28,7 @@ LikeSchema.post('save', (doc: any) => {
     if (doc.comment) {
         Comment.findByIdAndUpdate(doc.comment, {$inc: {likesCounter: 1}}, err => handleError(err));
     }
+    User.findByIdAndUpdate(doc.user, {$inc: {likesCounter: 1}}, err => handleError(err));
 });
 
 LikeSchema.post('remove', (doc: any) => {
@@ -39,6 +41,7 @@ LikeSchema.post('remove', (doc: any) => {
     if (doc.comment) {
         Comment.findByIdAndUpdate(doc.comment, {$inc: {likesCounter: -1}}, err => handleError(err));
     }
+    User.findByIdAndUpdate(doc.user, {$inc: {likesCounter: -1}}, err => handleError(err));
 });
 
 export = mongoose.model('Like', LikeSchema);
