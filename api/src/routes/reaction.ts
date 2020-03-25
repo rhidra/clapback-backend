@@ -17,15 +17,17 @@ router.route('/')
  * GET /reaction
  * Send all reaction
  * @param populate (optionnal)
- * @param topic Id of the topic (mandatory for users)
+ * @param topic Id of the topic
+ * @param user Id of the user
  */
   .get(notAuth, (req, res) => {
-    if ((!req.user || !(req.user as any).permissions.includes('creator')) && !req.query.topic) {
+    if ((!req.user || !(req.user as any).permissions.includes('creator')) && (!req.query.topic || !req.query.user)) {
       return sendError('Topic unspecified', res, 400);
     }
 
     const q: any = {};
     if (req.query.topic) { q.topic = req.query.topic; }
+    if (req.query.user) { q.user = req.query.user; }
 
     Reaction.find(q)
       .then(docs => {
