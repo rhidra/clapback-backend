@@ -3,6 +3,7 @@ import {sendData, sendData_cb, sendError} from '../middleware/utils';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Router} from 'express';
+import moment from 'moment';
 
 const router = Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
@@ -18,7 +19,7 @@ router.route('/')
    * @param populate Populate the author fields in each panel
    */
   .get(notAuth, (req, res) => Topic
-    .find((req.query.approved && req.query.approved === 'true') || !req.user || !(req.user as any).permissions.includes('creator') ? {approved: true} : {})
+    .find((req.query.approved && req.query.approved === 'true') || !req.user || !(req.user as any).permissions.includes('creator') ? {approved: true, date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
     .then(docs => {
       if (req.query.populate && req.query.populate === 'true') {
