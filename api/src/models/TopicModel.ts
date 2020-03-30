@@ -7,6 +7,7 @@ const TopicSchema = new Schema({
     title: String,
 
     hashtags: { type: [String], required: true },
+    suggestedHashtags: [String],
     approved: { type: Boolean, default: false },
     date: { type: Date, required: true },
 
