@@ -12,6 +12,7 @@ const ReactionSchema = new Schema({
   topic: { type: Schema.Types.ObjectId, ref: 'Topic', required: true },
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: Date, required: true, default: Date.now },
+  hashtags: { type: [String], required: true },
 
   video: String,
   text: String,

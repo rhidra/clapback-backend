@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const TopicSchema = new Schema({
     title: String,
 
-    hashtag: { type: String, required: true },
+    hashtags: { type: [String], required: true },
     approved: { type: Boolean, default: false },
     date: { type: Date, required: true },
 
