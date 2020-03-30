@@ -7,6 +7,7 @@ const QuizSchema = new Schema({
     content: { type: String, required: false },
     topic: { type: Schema.Types.ObjectId, ref: 'Topic' },
     isPoll: { type: Boolean, default: false },
+    explanationText: { type: String, required: false },
 
     choices: [{
         text: String,
