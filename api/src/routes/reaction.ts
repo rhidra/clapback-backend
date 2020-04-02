@@ -78,7 +78,9 @@ router.route('/:id')
         return sendError('Wrong user !', res, 403);
       } else {
         Object.assign(reaction, req.body);
-        reaction.save().then(sendData_cb(res));
+        reaction.save()
+          .then((data: any) => sendData(res, null, data))
+          .catch((err: any) => sendError(err, res));
       }
     });
   })
