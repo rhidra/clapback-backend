@@ -16,8 +16,9 @@ router.route('/')
 /**
  * GET /reaction
  * Send all reaction
- * @param populate (optionnal)
+ * @param populate (optionnal) Populate the user field. The topic field is never populated.
  * @param topic Id of the topic
+ * @param tags Search by hashtags
  * @param user Id of the user
  */
   .get(notAuth, (req, res) => {
@@ -28,6 +29,7 @@ router.route('/')
     const q: any = {};
     if (req.query.topic) { q.topic = req.query.topic; }
     if (req.query.user) { q.user = req.query.user; }
+    if (req.query.tags) { q.hashtags = { $all: req.query.tags }; }
 
     Reaction.find(q)
       .then(docs => {
