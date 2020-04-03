@@ -22,7 +22,8 @@ router.route('/')
  * @param user Id of the user
  */
   .get(notAuth, (req, res) => {
-    if ((!req.user || !(req.user as any).permissions.includes('creator')) && !req.query.topic && !req.query.user) {
+    if ((!req.user || !(req.user as any).permissions.includes('creator'))
+      && !req.query.topic && !req.query.user && !req.query.tags) {
       return sendError('Topic unspecified', res, 400);
     }
 
