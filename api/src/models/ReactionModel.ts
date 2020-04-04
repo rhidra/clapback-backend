@@ -9,6 +9,9 @@ const Schema = mongoose.Schema;
  * A reaction or a clapback of a user to a news topic.
  */
 const ReactionSchema = new Schema({
+  // TODO: Remove the topic foreign key
+  // For now, it is useful to suggest hashtags when editing a clapback
+  // TODO: Suggest hashtags in a smarter way
   topic: { type: Schema.Types.ObjectId, ref: 'Topic', required: true },
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: Date, required: true, default: Date.now },
