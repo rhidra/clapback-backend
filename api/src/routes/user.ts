@@ -8,6 +8,7 @@ import express_jwt_permissions from 'express-jwt-permissions';
 const db = mongoose.connection;
 const router = express.Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
+const notAuth = jwt({secret: process.env.JWT_SECRET, credentialsRequired: false});
 const guard = express_jwt_permissions();
 
 /**
@@ -22,7 +23,7 @@ router.route('/')
   .post(auth, guard.check('admin'), (req, res) => User.create(req.body, sendData_cb(res)));
 
 router.route('/:id')
-  .get(auth, guard.check('user'), (req, res) => User.findById(req.params.id, sendData_cb(res)))
+  .get(notAuth, (req, res) => User.findById(req.params.id, sendData_cb(res)))
 
   /**
    * POST /user/:id
