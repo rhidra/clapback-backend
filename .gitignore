@@ -1,6 +1,6 @@
 data-node/
 
-api/.env
-api/dist/
-api/node_modules/
-api/public/
+.env
+dist/
+node_modules/
+public/
