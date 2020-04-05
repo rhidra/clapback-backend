@@ -20,7 +20,7 @@ import authRouter from './routes/auth';
 import reactRouter from './routes/reaction';
 import commentRouter from './routes/comment';
 
-const port = process.env.SERVER_PORT;
+const port = process.env.PORT || 9000;
 const app = express();
 
 app.use(logger('dev'));
