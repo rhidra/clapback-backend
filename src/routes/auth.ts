@@ -86,13 +86,17 @@ router.post('/reset', (req, res) =>
  * POST /auth/pwd
  * Change the password of a user
  * ONLY FOR ADMINS
- * @body {id: User ID, password}
+ * @body {user: User ID, password}
  */
-router.post('/pwd', (req, res) =>
-  AuthUser.findOne({user: req.body.id}).then((user: any) => {
+router.post('/pwd', (req, res) => {
+  console.log('body', req.body);
+  AuthUser.find({}, data => console.log('authuser', data));
+  AuthUser.findOne({user: req.body.user}).then((user: any) => {
+    console.log(user);
+    if (!user) { return sendError('User does not exist !', res, 400); }
     user.setPassword(req.body.password);
-  })
-);
+  });
+});
 
 /**
  * POST /auth/token
