@@ -82,6 +82,19 @@ router.post('/reset', (req, res) =>
 );
 
 /**
+ * TODO: Remove this route !!!!
+ * POST /auth/pwd
+ * Change the password of a user
+ * ONLY FOR ADMINS
+ * @body {id: User ID, password}
+ */
+router.post('/pwd', (req, res) =>
+  AuthUser.findOne({user: req.body.id}).then((user: any) => {
+    user.setPassword(req.body.password);
+  })
+);
+
+/**
  * POST /auth/token
  * Send a new JWT token, useful when the previous token is expired.
  * Need a refresh token, created at login.
