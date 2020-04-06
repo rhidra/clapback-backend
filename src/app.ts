@@ -23,6 +23,13 @@ import * as Sentry from '@sentry/node';
 
 const port = process.env.PORT || 9000;
 const app = express();
+Sentry.init({
+    dsn: 'https://6cae9a572c7748bbae71b7218abc4df0@o373953.ingest.sentry.io/5191229',
+    environment: process.env.NODE_ENV
+});
+
+// Sentry request handler
+app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -37,8 +44,6 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
     mongoose.connection.once('open', () => console.log('Connected to Database!'));
 }, () => console.log('Not connected to database !'));
 
-Sentry.init({ dsn: 'https://6cae9a572c7748bbae71b7218abc4df0@o373953.ingest.sentry.io/5191229' });
-
 app.use(auth.initialize());
 
 app.use('/', indexRouter);
@@ -51,6 +56,13 @@ app.use('/user', userRouter);
 app.use('/reaction', reactRouter);
 app.use('/comment', commentRouter);
 app.use('/media', mediaRouter);
+
+// Sentry error handler
+app.use(Sentry.Handlers.errorHandler({
+    shouldHandleError(error): boolean {
+        return true; // TODO: Filter error by status (e.g. error.status === 404)
+    }
+}) as express.ErrorRequestHandler);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => next(createError(404)));
