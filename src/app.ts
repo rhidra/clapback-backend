@@ -31,7 +31,7 @@ app.use(cors());
 app.set('view engine', 'ejs');
 
 // Connecting to MongoDB
-mongoose.connect(process.env.MONGODB_URL).then(() => {
+mongoose.connect(process.env.MONGODB_URI).then(() => {
     mongoose.connection.on('error', (err: any) => console.log('Database connection error:', err));
     mongoose.connection.once('open', () => console.log('Connected to Database!'));
 }, () => console.log('Not connected to database !'));
