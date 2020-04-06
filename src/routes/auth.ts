@@ -93,7 +93,10 @@ router.post('/pwd', (req, res) => {
   AuthUser.find({}, data => console.log('authuser', data));
   AuthUser.findOne({user: req.body.user}).then((user: any) => {
     console.log(user);
-    if (!user) { return sendError('User does not exist !', res, 400); }
+    if (!user) {
+      user = new AuthUser({user: req.body.user});
+    }
+    user.emailValidated = true;
     user.setPassword(req.body.password);
   });
 });
