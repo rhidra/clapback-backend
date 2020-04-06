@@ -148,7 +148,9 @@ router.post('/token/reject', auth, guard.check('admin'), (req: express.Request, 
  */
 
 router.post('/phone', (req: express.Request, res: express.Response) => {
-  const code = process.env.NODE_ENV === 'development' ? '1' : Math.floor(100000 + Math.random() * 900000) + '';
+  // TODO: Generate code correctly even for prod environment
+  // const code = process.env.NODE_ENV === 'development' ? '1' : Math.floor(100000 + Math.random() * 900000) + '';
+  const code = '1';
 
   // TODO: Send the code to the SMS API
   console.log('Code generated :', code);
