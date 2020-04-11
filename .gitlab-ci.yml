@@ -1,6 +1,6 @@
 variables:
   DOCKER_DRIVER: overlay
-  DOCKER_HOST: tcp://localhost:2375
+  DOCKER_HOST: tcp://docker:2375
   GIT_SUBMODULE_STRATEGY: recursive
   CONTAINER_DEV_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
 
@@ -8,19 +8,6 @@ variables:
 stages:
   - build
   # - deploy
-
-build_image:
-  stage: build   # build image only after test passed
-  only: [master] # build and push images only for master branch commits
-  image: docker:git # use simply git docker image
-  services:
-    - docker:dind
-  script:
-    - docker login -u mayankkapoor -p $DOCKERHUB_PASSWORD
-    - docker build -t $CI_PROJECT_PATH .
-    - docker tag $CI_PROJECT_PATH $CI_PROJECT_PATH:$CI_COMMIT_SHA
-    - docker push $CI_PROJECT_PATH:$CI_COMMIT_SHA
-
 
 # Build step
 build:
