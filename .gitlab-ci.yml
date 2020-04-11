@@ -1,0 +1,33 @@
+variables:
+  DOCKER_DRIVER: overlay
+  DOCKER_HOST: tcp://localhost:2375
+  GIT_SUBMODULE_STRATEGY: recursive
+  CONTAINER_DEV_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+# Pipeline steps list
+stages:
+  - build
+  - deploy
+
+# Build step
+build:
+  stage: build
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker build -t $CONTAINER_DEV_IMAGE .
+    - docker push $CONTAINER_DEV_IMAGE
+  only:
+    - master
+
+# Deployment step
+deploy:
+  stage: deploy
+  image: alpine/helm:latest
+  script:
+    - helm init --client-only
+    - helm --namespace $NAMESPACE upgrade -i $REPO_NAME --set image.tag=$TAG,env=$ENV,image.repository=$REPO_REGISTRY_URL $PATH_TO_VALUES
+  only:
+    - master
