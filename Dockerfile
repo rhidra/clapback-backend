@@ -9,4 +9,7 @@ RUN mkdir -p /public/media
 RUN mkdir -p /public/thumbnail
 
 RUN npm install
+
+RUN npm run-script build
+
 CMD ["npm", "start"]
