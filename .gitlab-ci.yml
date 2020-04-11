@@ -27,8 +27,6 @@ deploy:
   stage: deploy
   image: google/cloud-sdk
   only: [master]
-  environment:
-    name: prod
   script:
     - echo "$SERVICE_ACCOUNT_KEY" > key.json
     - gcloud auth activate-service-account --key-file=key.json
