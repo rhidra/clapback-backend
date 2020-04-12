@@ -1,3 +1,15 @@
+# Config file for Gitlab Continuous Integration pipeline
+# The pipeline is divided in a build step and a deployment step
+#
+# During the build, the docker container is built and registered in Gitlab's container registry
+# During the deployment, there is an authentication using a GCP auth token,
+# then the kubernetes.yml is executed to create the Deployment Kubernetes Replication Controller.
+#
+# This file require the following environment variable, configured through the Gitlab UI (repo -> Settings -> CI -> Environment Var) :
+#   - $SERVICE_ACCOUNT_KEY : Token for authentication through GCP Kubernetes engine
+#
+# Written by Rémy HIDRA, Curios, 2020.
+
 variables:
   DOCKER_DRIVER: overlay
   DOCKER_HOST: tcp://docker:2375

@@ -18,6 +18,7 @@ spec:
         app: web
     spec:
       containers:
+      - name: zuoyou-backend
         image: _CONTAINER_IMAGE_
         # Environment variable to load secrets
         # See .prod-secrets.yaml uncommitted secret file
