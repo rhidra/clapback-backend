@@ -1,0 +1,85 @@
+# Kubernetes Yaml file to create a replication controller and a service for a MongoDB database
+# Put a Mongo DB at the URL : mongodb://mongo:27017/DB_NAME
+# To access the DB outside the cluster, create another external service.
+# Notice that the DB is not password protected so it might not be a good idea.
+# To apply this DB, use the Kubernetes CLI :
+#   kubectl apply -f mongo.yaml
+#
+# Written by Rémy HIDRA, Curios, 2020.
+
+# StorageClass (SC)
+# Type of storage
+# Fast SSD
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+  name: fast
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-ssd
+
+# PersistentVolumeClaim (PVC)
+# Link the SC to a persistent volume
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: fast
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+# Deployment
+# Replication controller to deploy a mongodb pod
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - image: mongo
+        name: mongo
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongodb
+          mountPath: /data/db
+      volumes:
+      - name: mongodb
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+
+# Headless Service
+# Allow the rest of the cluster to access the DB
+# URL of the DB: mongodb://mongo:27017/DB_NAME
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  labels:
+    app: mongo
+spec:
+  ports:
+    - port: 27017
+      targetPort: 27017
+  selector:
+    app: mongo

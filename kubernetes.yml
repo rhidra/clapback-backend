@@ -20,6 +20,9 @@ spec:
       containers:
       - name: _APP_NAME_
         image: _CONTAINER_IMAGE_
+        volumeMounts:
+        - name: media-server
+          mountPath: /usr/app/public
         # Environment variable to load secrets
         # See .prod-secrets.yaml uncommitted secret file
         env:
@@ -73,7 +76,10 @@ spec:
               secretKeyRef:
                 name: _SECRET_
                 key: SMTP_PASSWORD
-
+      volumes:
+      - name: media-server
+        persistentVolumeClaim:
+          claimName: media-server-pvc
 ---
 apiVersion: v1
 kind: Service

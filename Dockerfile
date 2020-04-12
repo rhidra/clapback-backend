@@ -5,8 +5,8 @@ WORKDIR /usr/app
 
 COPY ./ ./
 RUN npm install -g npm@latest
-RUN mkdir -p /public/media
-RUN mkdir -p /public/thumbnail
+RUN mkdir -p ./public/media
+RUN mkdir -p ./public/thumbnail
 
 RUN npm install
 
