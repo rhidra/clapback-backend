@@ -6,17 +6,18 @@
 
 Connect to `http://localhost:9000/`.
 
-## Deploy
+## Deployment Pipeline
 
-Push to heroku git branch:
+Just push in the master branch. The CI Gitlab pipeline should deploy the code correctly.
 
-```
-git push heroku master
-```
+The Gitlab CI pipeline works like this (see `gitlab-ci.yml`) :
 
-## Logs
-
-To access logs in production, use Heroku CLI:
-```
-heroku logs --tail
-```
+1. The Docker image container is built (see `Dockerfile`)
+    1. Dependencies are installed (`RUN npm install`)
+    2. The JS code is built in the `/dist` folder (`RUN npm run-script build`)
+2. The image is pushed to Gitlab container registry
+3. In a `google/gcloud-sdk` Docker image, the image is deployed
+    1. Authentication to the GCP API using a Gitlab environment variable
+    2. Deployment of the `kubernetes.yml` file, which deploys a Kubernetes Replication Controller
+4. In Kubernetes, the Replication Controller creates a Pod using the container registered
+5. Kubernetes assigns the environment variables defines in the secret of Kubernetes (see `.prod-secrets.yaml` uncommitted file)

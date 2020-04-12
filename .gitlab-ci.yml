@@ -15,6 +15,7 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   GIT_SUBMODULE_STRATEGY: recursive
   CONTAINER_DEV_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+  APP_NAME: zuoyou-backend
 
 # Pipeline steps list
 stages:
@@ -51,4 +52,5 @@ deploy:
     - kubectl delete deployment zuoyou-backend
     # kubectl set image deployment/zuoyou-backend zuoyou-backend=registry.gitlab.com/$CI_PROJECT_PATH:$CI_COMMIT_SHA
     - sed -i "s#_CONTAINER_IMAGE_#registry.gitlab.com/$CI_PROJECT_PATH:$CI_COMMIT_SHA#" kubernetes.yml
+    - sed -i "s#_APP_NAME_#$APP_NAME#" kubernetes.yml
     - kubectl apply -f kubernetes.yml
