@@ -88,4 +88,4 @@ spec:
       targetPort: 9000
   selector:
     app: _APP_NAME_
-  type: NodePort
+  type: LoadBalancer
