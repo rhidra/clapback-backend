@@ -89,8 +89,8 @@ metadata:
     app: _APP_NAME_
 spec:
   ports:
-    - name: https
-      port: 443
+    - name: http
+      port: 80
       targetPort: 9000
   selector:
     app: _APP_NAME_
