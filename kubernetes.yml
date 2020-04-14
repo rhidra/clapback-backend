@@ -23,9 +23,14 @@ spec:
         volumeMounts:
         - name: media-server
           mountPath: /usr/app/public
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
         readinessProbe:
           httpGet:
             path: /health
+            port: 80
 
         # Environment variable to load secrets
         # See .prod-secrets.yaml uncommitted secret file
@@ -110,7 +115,7 @@ metadata:
 spec:
   ports:
   - port: 80
-    targetPort: 9000
+    targetPort: 80
   selector:
     app: _APP_NAME_
     tier: web

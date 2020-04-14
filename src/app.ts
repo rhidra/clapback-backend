@@ -21,7 +21,7 @@ import reactRouter from './routes/reaction';
 import commentRouter from './routes/comment';
 import * as Sentry from '@sentry/node';
 
-const port = process.env.PORT || 9000;
+const port = process.env.PORT || 80;
 const app = express();
 Sentry.init({
     dsn: 'https://6cae9a572c7748bbae71b7218abc4df0@o373953.ingest.sentry.io/5191229',
