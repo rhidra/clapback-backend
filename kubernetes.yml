@@ -80,6 +80,22 @@ spec:
       - name: media-server
         persistentVolumeClaim:
           claimName: media-server-pvc
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: _APP_NAME_
+  annotations:
+    # MUST BE A STATIC IP RESERVED !
+    kubernetes.io/ingress.global-static-ip-name: _APP_NAME_-ip
+  labels:
+    app: _APP_NAME_
+spec:
+  backend:
+    serviceName: _APP_NAME_
+    servicePort: 80
+
 ---
 apiVersion: v1
 kind: Service
@@ -89,9 +105,9 @@ metadata:
     app: _APP_NAME_
 spec:
   ports:
-    - name: http
-      port: 80
-      targetPort: 9000
+  - port: 80
+    targetPort: 9000
   selector:
     app: _APP_NAME_
-  type: LoadBalancer
+    tier: web
+  type: NodePort
