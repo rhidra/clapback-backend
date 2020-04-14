@@ -57,6 +57,8 @@ app.use('/reaction', reactRouter);
 app.use('/comment', commentRouter);
 app.use('/media', mediaRouter);
 
+app.get('/health', (req, res) => res.send());
+
 // Sentry error handler
 app.use(Sentry.Handlers.errorHandler({
     shouldHandleError(error): boolean {

@@ -23,6 +23,10 @@ spec:
         volumeMounts:
         - name: media-server
           mountPath: /usr/app/public
+        readinessProbe:
+          httpGet:
+            path: /health
+
         # Environment variable to load secrets
         # See .prod-secrets.yaml uncommitted secret file
         env:
