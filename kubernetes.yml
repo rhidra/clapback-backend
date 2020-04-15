@@ -106,7 +106,7 @@ metadata:
     app: _APP_NAME_
 spec:
   rules:
-    http:
+  - http:
       paths:
       - backend:
           serviceName: _APP_NAME_
