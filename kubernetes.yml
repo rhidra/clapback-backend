@@ -24,25 +24,13 @@ spec:
         - name: media-server
           mountPath: /usr/app/public
         livenessProbe:
-          failureThreshold: 3
           httpGet:
             path: /health
             port: 80
-            scheme: HTTP
-          initialDelaySeconds: 60
-          periodSeconds: 60
-          successThreshold: 1
-          timeoutSeconds: 10
         readinessProbe:
-          failureThreshold: 3
           httpGet:
             path: /health
             port: 80
-            scheme: HTTP
-          initialDelaySeconds: 60
-          periodSeconds: 60
-          successThreshold: 1
-          timeoutSeconds: 10
 
         # Environment variable to load secrets
         # See .prod-secrets.yaml uncommitted secret file
