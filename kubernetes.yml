@@ -113,12 +113,9 @@ metadata:
   labels:
     app: _APP_NAME_
 spec:
-  rules:
-  - http:
-      paths:
-      - backend:
-          serviceName: _APP_NAME_
-          servicePort: 80
+  backend:
+    serviceName: _APP_NAME_
+    servicePort: 80
 
 ---
 apiVersion: v1
