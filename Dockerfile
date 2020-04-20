@@ -10,6 +10,6 @@ RUN mkdir -p ./public/thumbnail
 
 RUN npm install
 
-RUN npm run-script build
+RUN npm run build
 
 CMD ["npm", "start"]
