@@ -3,7 +3,7 @@ import passport from 'passport';
 import UserModel from '../models/UserModel';
 import PendingUser from '../models/PendingUserModel';
 import moment from 'moment';
-import {sendSuccess, hash} from './utils';
+import {sendSuccess, hash, sendError} from './utils';
 import AuthUser = require('../models/AuthUserModel');
 
 // Time to input the SMS code (in seconds)
@@ -14,7 +14,10 @@ const delaySize = 30;
  */
 passport.use('email', new LocalStrategy({usernameField: 'email'}, (email: string, password: string, done) => {
   UserModel.findOne({email})
-    .then(user => AuthUser.findOne({user: user._id}))
+    .then(user => {
+      if (!user) { return done(null, false, {errors: {'email or password': 'is invalid'}} as any); }
+      return AuthUser.findOne({user: user._id}) as any;
+    })
     .then((user: any) => {
       if (!user || !user.validatePassword(password)) {
         return done(null, false, {errors: {'email or password': 'is invalid'}} as unknown as IVerifyOptions);
