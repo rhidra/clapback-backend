@@ -119,3 +119,19 @@ spec:
   selector:
     app: _APP_NAME_
   type: NodePort
+
+# PersistentVolumeClaim (PVC)
+# Link a StorageClass 'fast' to a persistent volume
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-server-pvc
+  annotations:
+    volume.beta.kubernetes.io/storage-class: fast
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
