@@ -8,6 +8,7 @@
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
     "tsc": "tsc",
     "build": "npm-run-all clean lint tsc",
+    "predev": "mongod &",
     "dev:start": "npm-run-all build start",
     "dev": "nodemon --watch src -e ts,html,css,js --exec npm run dev:start",
     "start": "node ."
