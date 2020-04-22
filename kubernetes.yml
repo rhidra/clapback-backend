@@ -91,13 +91,14 @@ spec:
           claimName: media-server-pvc
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: _APP_NAME_
   annotations:
-    # MUST BE A STATIC IP RESERVED !
+    # MUST BE A GLOBAL STATIC IP RESERVED !
     kubernetes.io/ingress.global-static-ip-name: _APP_NAME_-ip
+    networking.gke.io/managed-certificates: _APP_NAME_-cert
   labels:
     app: _APP_NAME_
 spec:
