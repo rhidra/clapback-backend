@@ -67,5 +67,12 @@ UserSchema.methods.addPermission = function(perm: string) {
     }
 };
 
+UserSchema.methods.setAdmin = function() {
+    this.addPermission('user');
+    this.addPermission('creator');
+    this.addPermission('editor');
+    this.addPermission('admin');
+}
+
 const User = mongoose.model('User', UserSchema);
 export = User;

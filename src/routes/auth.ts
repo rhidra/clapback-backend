@@ -22,24 +22,30 @@ router.post('/register', (req: express.Request, res: express.Response) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) { return sendError('Email and password required !', res); }
-  User.findOne({email}).then(u => {
-    if (u) { return sendError('The email address already exists', res); }
+  let userCount: number;
 
-    const user: any = new User({email});
-    user.addPermission('user');
-    const authUser: any = new AuthUser({user});
-    authUser.setPassword(password);
+  User.countDocuments().exec()
+    .then(count => userCount = count)
+    .then(() => User.findOne({email}).exec())
+    .then(u => {
+      if (u) { return sendError('The email address already exists', res); }
 
-    Promise.all([authUser.save(), user.save()]).then(newUser => {
-      const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
-      res.json(Object.assign({refreshToken}, user.toAuthJSON()));
+      const user: any = new User({email});
+      user.addPermission('user');
+      if (userCount === 0) { user.setAdmin(); }
+      const authUser: any = new AuthUser({user});
+      authUser.setPassword(password);
 
-      Mailer.sendMail(email, 'Welcome in 左右 !', 'registration.ejs', {
-        email,
-        tokenUrl: process.env.HOST_URL + '/auth/email/' + (newUser[0] as any).emailToken
+      Promise.all([authUser.save(), user.save()]).then(newUser => {
+        const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
+        res.json(Object.assign({refreshToken}, user.toAuthJSON()));
+
+        Mailer.sendMail(email, 'Welcome in 左右 !', 'registration.ejs', {
+          email,
+          tokenUrl: process.env.HOST_URL + '/auth/email/' + (newUser[0] as any).emailToken
+        });
       });
     });
-  });
 });
 
 /**
