@@ -72,7 +72,7 @@ UserSchema.methods.setAdmin = function() {
     this.addPermission('creator');
     this.addPermission('editor');
     this.addPermission('admin');
-}
+};
 
 const User = mongoose.model('User', UserSchema);
 export = User;
