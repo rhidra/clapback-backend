@@ -32,7 +32,9 @@ Sentry.init({
 // Sentry request handler
 app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
 
-app.use(logger('dev'));
+app.use(logger(process.env.NODE_ENV === 'development' ? 'dev' : 'combined', {
+    skip: req => req.originalUrl === '/health' || req.originalUrl === '/'
+}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
