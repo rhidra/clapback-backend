@@ -37,7 +37,8 @@ UserSchema.methods.generateJWT = function() {
         email: this.email,
         phone: this.phone,
         permissions: this.permissions,
-    }, process.env.JWT_SECRET, {expiresIn: 300});
+        // TODO: Change the expiresIn param back to 300 (Quick fix for the backoffice token expiration problem)
+    }, process.env.JWT_SECRET, {expiresIn: 3000});
 };
 
 UserSchema.methods.toAuthJSON = function() {
