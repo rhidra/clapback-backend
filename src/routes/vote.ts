@@ -16,10 +16,11 @@ const guard = express_jwt_permissions();
  * Retrieve a vote
  *
  * POST /quiz/vote/:idQuiz
- * Create a quiz
+ * Vote for a quiz
+ * @body {choice}
  *
  * DELETE /quiz/vote/:idQuiz
- * Delete a vote for the specific quiz
+ * Delete a vote for the specific quiz for the user
  */
 // TODO: Protect against malicious users
 router.route('/:idQuiz')
@@ -29,8 +30,9 @@ router.route('/:idQuiz')
   .post(auth, guard.check('user'), (req, res) => Vote
     .findOne({quiz: req.params.idQuiz, user: (req.user as any)._id}).then((duplicate: any) => {
       if (!duplicate) {
-        return Vote.create({quiz: req.params.idQuiz, user: (req.user as any)._id, choice: req.body.choice},
-          sendData_cb(res)).catch(err => sendError(err, res));
+        return Vote
+          .create({quiz: req.params.idQuiz, user: (req.user as any)._id, choice: req.body.choice}, sendData_cb(res))
+          .catch(err => sendError(err, res));
       } else if (duplicate.choice !== req.body.choice) {
         duplicate.remove();
         return Vote.create({quiz: req.params.idQuiz, user: (req.user as any)._id, choice: req.body.choice},
