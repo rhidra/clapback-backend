@@ -1,5 +1,5 @@
 data-node/
-.prod-secrets.yaml
+k8s/.prod-secrets.yaml
 .env
 dist/
 node_modules/
