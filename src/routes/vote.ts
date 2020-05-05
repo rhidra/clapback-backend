@@ -31,12 +31,11 @@ router.route('/:idQuiz')
     .findOne({quiz: req.params.idQuiz, user: (req.user as any)._id}).then((duplicate: any) => {
       if (!duplicate) {
         return Vote
-          .create({quiz: req.params.idQuiz, user: (req.user as any)._id, choice: req.body.choice}, sendData_cb(res))
-          .catch(err => sendError(err, res));
+          .create({quiz: req.params.idQuiz, user: (req.user as any)._id, choice: req.body.choice}, sendData_cb(res));
       } else if (duplicate.choice !== req.body.choice) {
         duplicate.remove();
-        return Vote.create({quiz: req.params.idQuiz, user: (req.user as any)._id, choice: req.body.choice},
-          sendData_cb(res));
+        return Vote
+          .create({quiz: req.params.idQuiz, user: (req.user as any)._id, choice: req.body.choice}, sendData_cb(res));
       }
       return sendSuccess(res);
     }))
