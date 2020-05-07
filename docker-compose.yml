@@ -18,14 +18,12 @@ services:
     container_name: mongo
     image: mongo
     restart: always
-    healthcheck:
-      test: ['CMD', "echo 'db.runCommand(\"ping\").ok' | mongo localhost:27017/test --quiet"]
     ports:
-      - "27017:27017"
+      - 27017:27017
     environment:
       # Password and username are defined in .env file
-      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
     volumes:
       - ./data-node:/data/db
 
