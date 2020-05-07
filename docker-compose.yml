@@ -9,6 +9,8 @@ services:
       - "9000:9000"
     depends_on:
       - mongo
+    volumes:
+      - ./public:./public
     links:
       - mongo
 
@@ -23,3 +25,27 @@ services:
     command: mongod --noauth
     volumes:
       - ./data-node:/data/db
+
+  nginx:
+    restart: always
+    image: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - api
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - nginx
+    # TODO: Remove --staging option when prod clean
+    command: certonly --email zuoyoucurios@gmail.com --agree-tos --no-eff-email --staging -d api.zuoyoubycurios.com
