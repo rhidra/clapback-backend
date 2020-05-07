@@ -10,7 +10,7 @@ services:
     depends_on:
       - mongo
     volumes:
-      - ./public:./public
+      - ./public:/usr/app/public
     links:
       - mongo
 
