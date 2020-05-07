@@ -42,10 +42,10 @@ app.use(cors());
 app.set('view engine', 'ejs');
 
 // Connecting to MongoDB
+const dbURI = `mongodb://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@mongo:27017/zuoyou`;
 mongoose.connection.on('connecting', () => console.log('connecting to MongoDB...'));
 mongoose.connection.on('error', (error) => {
   console.error('Error in MongoDb connection: ' + error);
-  console.error('Mongo URI: ' + process.env.MONGODB_URI);
   mongoose.disconnect();
 });
 mongoose.connection.on('connected', () => console.log('MongoDB connected!'));
@@ -53,9 +53,9 @@ mongoose.connection.once('open', () => console.log('MongoDB connection opened!')
 mongoose.connection.on('reconnected', () => console.log('MongoDB reconnected!'));
 mongoose.connection.on('disconnected', () => {
   console.log('MongoDB disconnected!');
-  mongoose.connect(process.env.MONGODB_URI, {server: {auto_reconnect: true}});
+  mongoose.connect(dbURI, {server: {auto_reconnect: true}});
 });
-mongoose.connect(process.env.MONGODB_URI, {server: {auto_reconnect: true}});
+mongoose.connect(dbURI, {server: {auto_reconnect: true}});
 
 app.use(auth.initialize());
 
