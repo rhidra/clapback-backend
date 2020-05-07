@@ -49,3 +49,7 @@ services:
       - nginx
     # TODO: Remove --staging option when prod clean
     command: certonly --email zuoyoucurios@gmail.com --agree-tos --no-eff-email --staging -d api.zuoyoubycurios.com
+
+volumes:
+  certbot-etc:
+  certbot-var:
