@@ -20,10 +20,6 @@ services:
     restart: always
     ports:
       - 27017:27017
-    environment:
-      # Password and username are defined in .env file
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
     volumes:
       - ./data-node:/data/db
 
