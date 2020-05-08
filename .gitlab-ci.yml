@@ -23,7 +23,8 @@ deploy:
   only: [master]
   script:
     - mkdir -p ~/.ssh/
-    - echo -e $SSH_DEPLOY_KEY > ~/.ssh/rsa_key
+    - echo -e "$SSH_DEPLOY_KEY" > ~/.ssh/rsa_key
+    - chmod 700 ~/.ssh
     - chmod 600 ~/.ssh/rsa_key
     - ssh-keyscan -H $DEPLOYMENT_SERVER_IP >> ~/.ssh/known_hosts
     - ssh -i ~/.ssh/rsa_key api@api.zuoyoubycurios.com "cd zuoyou-backend; git pull; docker-compose build; docker-compose up -d"
