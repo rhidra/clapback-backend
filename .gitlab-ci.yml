@@ -10,6 +10,10 @@
 #
 # Written by Rémy HIDRA, Curios, 2020.
 
+
+variables:
+  DEPLOYMENT_SERVER_IP: api.zuoyoubycurios.com
+
 stages:
   - deploy
 
@@ -19,4 +23,5 @@ deploy:
   only: [master]
   script:
     - echo -e $SSH_DEPLOY_KEY > rsa_key
+    - ssh-keyscan -H $DEPLOYMENT_SERVER_IP >> ~/.ssh/known_hosts
     - ssh -i rsa_key api@api.zuoyoubycurios.com "cd zuoyou-backend; git pull; docker-compose build; docker-compose up -d"
