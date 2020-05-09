@@ -4,5 +4,5 @@ public/
 dist/
 dump/
 
-# TODO: Remove when production setup is working
-#node_modules/
+node_modules/
+
