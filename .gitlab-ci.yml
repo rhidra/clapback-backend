@@ -18,7 +18,8 @@ stages:
   - deploy
 
 deploy:
-  stage: deploy
+  stage:
+    - deploy
   image: gitlab/dind:latest
   only: [master]
   script:
