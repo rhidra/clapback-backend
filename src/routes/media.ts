@@ -69,7 +69,6 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
  */
 
 router.post('/', auth, upload.single('media'), (req, res) => {
-  console.log('MEDIA RECEIVED !');
   if (!req.file) {
     sendError('No media received !', res);
   }
