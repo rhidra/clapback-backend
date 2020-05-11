@@ -1,6 +1,6 @@
 import * as express from 'express';
 import mongoose from 'mongoose';
-import {sendData, sendData_cb, sendError} from '../middleware/utils';
+import {sendData_cb, sendError} from '../middleware/utils';
 import User from '../models/UserModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
