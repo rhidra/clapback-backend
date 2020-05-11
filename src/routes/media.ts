@@ -49,7 +49,7 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
       .resize(opt.width ? opt.width : (opt.height ? Jimp.AUTO : img.bitmap.width),
         opt.height ? (opt.width ? Jimp.AUTO : opt.height) : Jimp.AUTO);
     if (opt.width && opt.height) {
-      img = img.crop(0, 0, opt.width, opt.height);
+      img = img.crop((img.bitmap.width - opt.width) / 2, (img.bitmap.height - opt.height) / 2, opt.width, opt.height);
     }
     img.write(out ? out : buildPath(filename), r);
   }));
