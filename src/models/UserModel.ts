@@ -1,5 +1,4 @@
-import mongoose, {Model} from 'mongoose';
-import crypto from 'crypto';
+import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 
 const { Schema } = mongoose;
@@ -37,8 +36,7 @@ UserSchema.methods.generateJWT = function() {
         email: this.email,
         phone: this.phone,
         permissions: this.permissions,
-        // TODO: Change the expiresIn param back to 300 (Quick fix for the backoffice token expiration problem)
-    }, process.env.JWT_SECRET, {expiresIn: 3000});
+    }, process.env.JWT_SECRET, {expiresIn: 300});
 };
 
 UserSchema.methods.toAuthJSON = function() {
