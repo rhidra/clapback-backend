@@ -76,7 +76,8 @@ app.get('/health', (req, res) => res.send());
 // Sentry error handler
 app.use(Sentry.Handlers.errorHandler({
   shouldHandleError(error): boolean {
-    return true; // TODO: Filter error by status (e.g. error.status === 404)
+    // TODO: Filter error by status (e.g. error.status === 404)
+    return process.env.NODE_ENV !== 'development';
   }
 }) as express.ErrorRequestHandler);
 
