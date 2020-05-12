@@ -20,6 +20,7 @@ import authRouter from './routes/auth';
 import reactRouter from './routes/reaction';
 import commentRouter from './routes/comment';
 import adminRouter from './routes/admin';
+import followRouter from './routes/follow';
 import * as Sentry from '@sentry/node';
 
 const port = process.env.PORT || 80;
@@ -70,6 +71,7 @@ app.use('/reaction', reactRouter);
 app.use('/comment', commentRouter);
 app.use('/media', mediaRouter);
 app.use('/admin', adminRouter);
+app.use('/follow', followRouter);
 
 app.get('/health', (req, res) => res.send());
 
