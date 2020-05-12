@@ -68,7 +68,9 @@ router.route('/:id')
  * Modify a comment. Full permissions to editors.
  */
   .post(auth, guard.check('user'), (req, res) => {
-    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {return sendError('Wrong user !', res, 403); }
+    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {
+      return sendError('Wrong user !', res, 403);
+    }
     Comment.findById(req.params.id).then((comment: any) => {
       if (!comment) {
         return sendError('Comment does not exist !', res, 400);

@@ -74,7 +74,9 @@ router.route('/:id')
  * Modify a reaction. Allowed to editors.
  */
   .post(auth, guard.check('user'), (req, res) => {
-    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {return sendError('Wrong user !', res, 403); }
+    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {
+      return sendError('Wrong user !', res, 403);
+    }
     Reaction.findById(req.params.id).then((reaction: any) => {
       if (!reaction) {
         return sendError('Reaction does not exist !', res, 400);
