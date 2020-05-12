@@ -1,6 +1,10 @@
+# Define the containers to have a functionnal backend API for the Zuoyou app
+# Before starting first, to make nginx starts in HTTPS, you need to run init-letsencrypt.sh
+
 version: "3"
 
 services:
+  # Main node/express REST server
   api:
     container_name: zuoyou-backend
     restart: always
@@ -14,6 +18,7 @@ services:
     links:
       - mongo
 
+  # Mongo DB, mounted on 27017
   mongo:
     container_name: mongo
     image: mongo
@@ -23,6 +28,7 @@ services:
     volumes:
       - ./data-node:/data/db
 
+  # End point of the server
   nginx:
     container_name: nginx
     restart: always
@@ -38,6 +44,7 @@ services:
       - api
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
+  # Automate certificate renewal
   certbot:
     image: certbot/certbot
     container_name: certbot
@@ -46,6 +53,7 @@ services:
       - ./certbot/www:/var/www/certbot
     depends_on:
       - nginx
+    # Renew the certificate every 12h
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 volumes:

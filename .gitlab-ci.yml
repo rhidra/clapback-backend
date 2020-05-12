@@ -1,9 +1,6 @@
 # Config file for Gitlab Continuous Integration pipeline
-# The pipeline is divided in a build step and a deployment step
 #
-# During the build, the docker container is built and registered in Gitlab's container registry
-# During the deployment, there is an authentication using a GCP auth token,
-# then the kubernetes.yml is executed to create the Deployment Kubernetes Replication Controller.
+# TODO: Add a step for testing
 #
 # This file require the following environment variable, configured through the Gitlab UI (repo -> Settings -> CI -> Environment Var) :
 #   - $SSH_DEPLOY_KEY : SSH private key to the server
