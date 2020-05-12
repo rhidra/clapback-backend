@@ -28,6 +28,8 @@ const UserSchema = new Schema({
     likesCounter: { type: Number, default: 0 },
     clapbacksCounter: { type: Number, default: 0 },
     commentsCounter: { type: Number, default: 0 },
+    followingCounter: { type: Number, default: 0 },
+    followersCounter: { type: Number, default: 0 },
 });
 
 UserSchema.methods.generateJWT = function() {
