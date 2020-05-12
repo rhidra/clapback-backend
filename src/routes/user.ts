@@ -1,6 +1,6 @@
 import * as express from 'express';
 import mongoose from 'mongoose';
-import {sendData_cb, sendError} from '../middleware/utils';
+import {hasPerm, sendData_cb, sendError} from '../middleware/utils';
 import User from '../models/UserModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
@@ -33,14 +33,12 @@ router.route('/:id')
    * Users can change basic info about themselves
    */
   .post(auth, guard.check('user'), (req, res) => {
-    if ((req.user as any).permissions.includes('admin')
-      || (req.user as any).permissions.includes('editor')
-      || (req.user as any)._id === req.params.id) {
+    if (hasPerm(req, 'admin') || hasPerm(req, 'editor') || (req.user as any)._id === req.params.id) {
 
-      if (!(req.user as any).permissions.includes('admin')) {
+      if (!hasPerm(req, 'admin')) {
         delete req.body.permissions;
       }
-      if (!(req.user as any).permissions.includes('editor')) {
+      if (!hasPerm(req, 'editor')) {
         delete req.body.verified;
         delete req.body.level;
       }

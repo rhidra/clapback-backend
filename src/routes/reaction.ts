@@ -1,9 +1,10 @@
 import * as express from 'express';
 import mongoose from 'mongoose';
-import {sendData, sendData_cb, sendError} from '../middleware/utils';
+import {hasPerm, sendData, sendData_cb, sendError} from '../middleware/utils';
 import Reaction from '../models/ReactionModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
+import has = Reflect.has;
 
 const db = mongoose.connection;
 const router = express.Router();
@@ -22,7 +23,7 @@ router.route('/')
  * @param user Id of the user
  */
   .get(notAuth, (req, res) => {
-    if ((!req.user || !(req.user as any).permissions.includes('creator'))
+    if ((!req.user || !hasPerm(req, 'creator'))
       && !req.query.topic && !req.query.user && !req.query.tags) {
       return sendError('Topic unspecified', res, 400);
     }
@@ -50,7 +51,7 @@ router.route('/')
  * Create a clapback. Full permissions to admins.
  */
   .post(auth, guard.check('user'), (req, res) => {
-    if (!(req.user as any).permissions.includes('admin') && (req.user as any)._id !== req.body.user) {
+    if (!hasPerm(req, 'admin') && (req.user as any)._id !== req.body.user) {
       return sendError('Wrong user !', res);
     }
     Reaction.create(req.body, sendData_cb(res));
@@ -73,11 +74,11 @@ router.route('/:id')
  * Modify a reaction. Allowed to editors.
  */
   .post(auth, guard.check('user'), (req, res) => {
-    if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== req.body.user) {return sendError('Wrong user !', res, 403); }
+    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {return sendError('Wrong user !', res, 403); }
     Reaction.findById(req.params.id).then((reaction: any) => {
       if (!reaction) {
         return sendError('Reaction does not exist !', res, 400);
-      } else if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== reaction.user) {
+      } else if (!hasPerm(req, 'editor') && (req.user as any)._id !== reaction.user) {
         return sendError('Wrong user !', res, 403);
       } else {
         Object.assign(reaction, req.body);
@@ -93,7 +94,7 @@ router.route('/:id')
  * Delete a reaction. Allowed to editors.
  */
   .delete(auth, guard.check('user'), (req, res) =>  {
-    if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== req.body.user) {
+    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {
       return sendError('Wrong user !', res, 403);
     }
     Reaction.findOneAndDelete({_id: req.params.id}, sendData_cb(res));

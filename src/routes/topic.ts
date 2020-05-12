@@ -1,5 +1,5 @@
 import Topic from '../models/TopicModel';
-import {sendData, sendData_cb, sendError} from '../middleware/utils';
+import {hasPerm, sendData, sendData_cb, sendError} from '../middleware/utils';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Router} from 'express';
@@ -19,7 +19,8 @@ router.route('/')
    * @param populate Populate the author fields in each panel
    */
   .get(notAuth, (req, res) => Topic
-    .find((req.query.approved && req.query.approved === 'true') || !req.user || !(req.user as any).permissions.includes('creator') ? {approved: true, date: {$lte: moment().toISOString()}} : {})
+    .find((req.query.approved && req.query.approved === 'true') || !req.user || !hasPerm(req, 'creator')
+                    ? {approved: true, date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
     .then(docs => {
       if (req.query.populate && req.query.populate === 'true') {
@@ -38,7 +39,7 @@ router.route('/')
    * Create a news topic
    */
   .post(auth, guard.check('creator'), (req, res) => Topic.create(req.body).then((topic: any) => {
-    if (!(req.user as any).permissions.includes('editor')) {
+    if (!hasPerm(req, 'editor')) {
       topic.approved = false;
       topic.save();
     }
@@ -61,7 +62,7 @@ router.route('/:id')
     })
     .then((doc: any) => req.user ? doc.addHasLiked((req.user as any)._id) : Promise.resolve(doc))
     .then((topic: any) => {
-      if ((!req.user || !(req.user as any).permissions.includes('creator')) && !topic.approved) {
+      if ((!req.user || !hasPerm(req, 'creator')) && !topic.approved) {
         return sendError('Unauthorized', res, 403);
       }
       return sendData(res, null, topic);
@@ -71,7 +72,7 @@ router.route('/:id')
   // Modify a specific news topic
   .post(auth, guard.check('creator'),
     (req, res) => Topic.findOneAndUpdate({_id: req.params.id}, req.body).then((topic: any) => {
-      if (!(req.user as any).permissions.includes('editor')) {
+      if (!hasPerm(req, 'editor')) {
         topic.approved = false;
         topic.save();
       }

@@ -69,6 +69,10 @@ export function hash(data: string): string {
   return h.digest('hex');
 }
 
+export function hasPerm(req: any, perm: string) {
+  return req.user.permissions.includes(perm);
+}
+
 /* MEDIA SERVER */
 export function buildModifiedFilename(filename: string, opt: any, extension: string = getExtension(filename)) {
   return getFilename(filename)

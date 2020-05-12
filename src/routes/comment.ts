@@ -1,6 +1,6 @@
 import * as express from 'express';
 import mongoose, {MongooseDocument} from 'mongoose';
-import {sendData, sendData_cb, sendError} from '../middleware/utils';
+import {hasPerm, sendData, sendData_cb, sendError} from '../middleware/utils';
 import Comment from '../models/CommentModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
@@ -45,7 +45,7 @@ router.route('/')
  * Create a comment. Full permissions to admins.
  */
   .post(auth, guard.check('user'), (req, res) => {
-    if (!(req.user as any).permissions.includes('admin') && (req.user as any)._id !== req.body.user) {
+    if (!hasPerm(req, 'admin') && (req.user as any)._id !== req.body.user) {
       return sendError('Wrong user !', res);
     }
     Comment.create(req.body, sendData_cb(res));
@@ -68,11 +68,11 @@ router.route('/:id')
  * Modify a comment. Full permissions to editors.
  */
   .post(auth, guard.check('user'), (req, res) => {
-    if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== req.body.user) {return sendError('Wrong user !', res, 403); }
+    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {return sendError('Wrong user !', res, 403); }
     Comment.findById(req.params.id).then((comment: any) => {
       if (!comment) {
         return sendError('Comment does not exist !', res, 400);
-      } else if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== comment.user) {
+      } else if (!hasPerm(req, 'editor') && (req.user as any)._id !== comment.user) {
         return sendError('Wrong user !', res, 403);
       } else {
         Object.assign(comment, req.body);
@@ -86,7 +86,7 @@ router.route('/:id')
  * Delete a comment. Full permissions to editors.
  */
   .delete(auth, guard.check('user'), (req, res) =>  {
-    if (!(req.user as any).permissions.includes('editor') && (req.user as any)._id !== req.body.user) {
+    if (!hasPerm(req, 'editor') && (req.user as any)._id !== req.body.user) {
       return sendError('Wrong user !', res, 403);
     }
     Comment
