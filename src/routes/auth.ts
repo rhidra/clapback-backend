@@ -94,16 +94,14 @@ router.post('/reset', (req, res) =>
  * ONLY FOR ADMINS
  * @body {user: User ID, password}
  */
-router.post('/pwd', (req, res) => {
-  console.log('body', req.body);
-  AuthUser.find({}, data => console.log('authuser', data));
+router.post('/pwd', auth, guard.check('admin'), (req, res) => {
   AuthUser.findOne({user: req.body.user}).then((user: any) => {
-    console.log(user);
     if (!user) {
       user = new AuthUser({user: req.body.user});
     }
-    user.emailValidated = true;
     user.setPassword(req.body.password);
+    user.save();
+    sendSuccess(res);
   });
 });
 
