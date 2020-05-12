@@ -47,7 +47,7 @@ router.route('/')
 
 /**
  * POST /reaction
- * Create a quiz. Full permissions to admins.
+ * Create a clapback. Full permissions to admins.
  */
   .post(auth, guard.check('user'), (req, res) => {
     if (!(req.user as any).permissions.includes('admin') && (req.user as any)._id !== req.body.user) {

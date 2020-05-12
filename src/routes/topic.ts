@@ -33,7 +33,10 @@ router.route('/')
     .then(docs => sendData(res, null, docs))
   )
 
-  // Create a news topic
+  /**
+   * POST /topic/
+   * Create a news topic
+   */
   .post(auth, guard.check('creator'), (req, res) => Topic.create(req.body).then((topic: any) => {
     if (!(req.user as any).permissions.includes('editor')) {
       topic.approved = false;
