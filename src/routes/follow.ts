@@ -23,7 +23,6 @@ router.post('/', auth, guard.check('user'), (req, res) => {
   if (!follower || !following) { return sendError('Bad parameters !', res, 400); }
 
   Following.findOne({user: follower}).then((user: any) => {
-    console.log('following', user);
     if (!user) {
       user = new Following({user: follower});
       user.save();
@@ -34,7 +33,6 @@ router.post('/', auth, guard.check('user'), (req, res) => {
   });
 
   Follower.findOne({user: following}).then((user: any) => {
-    console.log('followers', user);
     if (!user) {
       user = new Follower({user: following});
       user.save();
@@ -54,7 +52,7 @@ router.post('/', auth, guard.check('user'), (req, res) => {
  */
 router.get('/followers/:id', auth, guard.check('user'), (req, res) => Follower
   .findOne({user: req.params.id})
-  .then(doc => req.query.populate ? doc.populate('followers').execPopulate() : doc)
+  .then(doc => doc && req.query.populate ? doc.populate('followers').execPopulate() : doc)
   .then(data => sendData(res, null, data))
 );
 
@@ -66,7 +64,7 @@ router.get('/followers/:id', auth, guard.check('user'), (req, res) => Follower
  */
 router.get('/following/:id', auth, guard.check('user'), (req, res) => Following
   .findOne({user: req.params.id})
-  .then(doc => req.query.populate ? doc.populate('following').execPopulate() : doc)
+  .then(doc => doc && req.query.populate ? doc.populate('following').execPopulate() : doc)
   .then(data => sendData(res, null, data))
 );
 
