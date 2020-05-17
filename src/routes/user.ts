@@ -1,6 +1,6 @@
 import * as express from 'express';
 import mongoose from 'mongoose';
-import {hasPerm, sendData_cb, sendError} from '../middleware/utils';
+import {hasPerm, sendData, sendData_cb, sendError} from '../middleware/utils';
 import User from '../models/UserModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
@@ -23,7 +23,16 @@ router.route('/')
   .post(auth, guard.check('admin'), (req, res) => User.create(req.body, sendData_cb(res)));
 
 router.route('/:id')
-  .get(notAuth, (req, res) => User.findById(req.params.id, sendData_cb(res)))
+  .get(notAuth, (req, res) => User.findById(req.params.id).then((user: any) => {
+    if (req.user) {
+      user.isFollowedBy((req.user as any)._id).then((isFollowing: boolean) => {
+        user = Object.assign(user.toJSON(), {isFollowing});
+        sendData(res, null, user);
+      });
+    } else {
+      sendData(res, null, user);
+    }
+  }).catch(err => sendError(err, res)))
 
   /**
    * POST /user/:id

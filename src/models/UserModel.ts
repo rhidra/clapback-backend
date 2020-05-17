@@ -70,5 +70,12 @@ UserSchema.methods.setAdmin = function() {
     this.addPermission('admin');
 };
 
+// Is "userId" following "this" ?
+UserSchema.methods.isFollowedBy = function(userId: string) {
+    return mongoose.model('Following').findOne({user: userId}).exec()
+      .then((doc: any) => doc ?
+        !!doc.following.find((id: any) => JSON.stringify(id) === JSON.stringify(this._id)) : false);
+};
+
 const User = mongoose.model('User', UserSchema);
 export = User;
