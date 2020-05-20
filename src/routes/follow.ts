@@ -20,28 +20,63 @@ const guard = express_jwt_permissions();
 router.post('/', auth, guard.check('user'), (req, res) => {
   const following = req.body.following;
   const follower = hasPerm(req, 'admin') ? req.body.follower || (req.user as any)._id : (req.user as any)._id;
-  if (!follower || !following) { return sendError('Bad parameters !', res, 400); }
+  if (!follower || !following || follower === following) { return sendError('Bad parameters !', res, 400); }
 
-  Following.findOne({user: follower}).then((user: any) => {
-    if (!user) {
-      user = new Following({user: follower});
-      user.save();
-    }
-    if (user.following.indexOf(following) === -1) {
-      user.following.push(following);
-    }
-  });
+  Following.findOne({user: follower}).exec()
+    .then((user: any) => {
+      if (!user) {
+        user = new Following({user: follower});
+        return user.save();
+      }
+      return user;
+    }).then(user => {
+      if (user.following.indexOf(following) === -1) {
+        user.following.push(following);
+        user.save();
+      }
+    });
 
-  Follower.findOne({user: following}).then((user: any) => {
-    if (!user) {
-      user = new Follower({user: following});
-      user.save();
-    }
-    if (user.followers.indexOf(follower) === -1) {
-      user.followers.push(follower);
-    }
-  });
+  Follower.findOne({user: following}).exec()
+    .then((user: any) => {
+      if (!user) {
+        user = new Follower({user: following});
+        return user.save();
+      }
+      return user;
+    }).then(user => {
+      if (user.followers.indexOf(follower) === -1) {
+        user.followers.push(follower);
+        user.save();
+      }
+    });
   sendSuccess(res);
+});
+
+/**
+ * DELETE /follow/:id
+ * @param follower ID of the follower (Only for admins)
+ * Unfollow a user
+ */
+router.delete('/:id', auth, guard.check('user'), (req, res) => {
+  const followed = req.params.id;
+  const follower = hasPerm(req, 'admin') ? req.query.follower || (req.user as any)._id : (req.user as any)._id;
+
+  // TODO: Expensive operation. Put in a separate processing unit.
+  Promise.all([
+    Follower.findOne({user: followed}).exec().then((user: any) => {
+      if (user) {
+        user.followers.splice(user.followers.indexOf(follower), 1);
+        return user.save();
+      }
+    }),
+    Following.findOne({user: follower}).exec().then((user: any) => {
+      if (user) {
+        user.following.splice(user.following.indexOf(followed), 1);
+        return user.save();
+      }
+    })
+  ])
+    .then(r => sendData(res, null, r));
 });
 
 /**
