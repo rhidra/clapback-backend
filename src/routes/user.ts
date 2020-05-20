@@ -23,16 +23,22 @@ router.route('/')
   .post(auth, guard.check('admin'), (req, res) => User.create(req.body, sendData_cb(res)));
 
 router.route('/:id')
-  .get(notAuth, (req, res) => User.findById(req.params.id).then((user: any) => {
-    if (req.user) {
-      user.isFollowedBy((req.user as any)._id).then((isFollowing: boolean) => {
-        user = Object.assign(user.toJSON(), {isFollowing});
-        sendData(res, null, user);
-      });
-    } else {
-      sendData(res, null, user);
+  .get(notAuth, (req, res) => {
+    const q = User.findById(req.params.id);
+    if (!req.user || !((req.user as any)._id === req.params.id || hasPerm(req, 'admin'))) {
+      q.select('-phone -email -permissions');
     }
-  }).catch(err => sendError(err, res)))
+    q.exec().then((user: any) => {
+      if (req.user) {
+        user.isFollowedBy((req.user as any)._id).then((isFollowing: boolean) => {
+          user = Object.assign(user.toJSON(), {isFollowing});
+          sendData(res, null, user);
+        });
+      } else {
+        sendData(res, null, user);
+      }
+    }).catch(err => sendError(err, res));
+  })
 
   /**
    * POST /user/:id
