@@ -78,4 +78,5 @@ UserSchema.methods.isFollowedBy = function(userId: string) {
 };
 
 const User = mongoose.model('User', UserSchema);
+
 export = User;

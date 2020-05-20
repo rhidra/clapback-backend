@@ -45,6 +45,9 @@ export function sendError(err: string, res: express.Response, errorCode: number 
 }
 
 /* MODELS */
+// Reduced user profile that can be viewed by other users. Follow Mongoose select syntax
+export const REDUCED_USER_FIELDS = 'name image level verified';
+
 export function addHasLiked(doc: any, modelType: string, userId: string): Promise<any> {
   const json: any = doc.toJSON();
   const query: any = {user: userId};

@@ -1,5 +1,5 @@
 import Topic from '../models/TopicModel';
-import {hasPerm, sendData, sendData_cb, sendError} from '../middleware/utils';
+import {hasPerm, REDUCED_USER_FIELDS, sendData, sendData_cb, sendError} from '../middleware/utils';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Router} from 'express';
@@ -24,8 +24,9 @@ router.route('/')
     .sort({date: 'desc'})
     .then(docs => {
       if (req.query.populate && req.query.populate === 'true') {
-        return Promise.all(docs.map(e => e.populate('centerPanel.author')
-          .populate('leftPanel.author').populate('rightPanel.author').execPopulate()));
+        return Promise.all(docs.map(e => e.populate('centerPanel.author', REDUCED_USER_FIELDS)
+          .populate('leftPanel.author', REDUCED_USER_FIELDS)
+          .populate('rightPanel.author', REDUCED_USER_FIELDS).execPopulate()));
       }
       return Promise.resolve(docs);
     })
@@ -55,8 +56,9 @@ router.route('/:id')
   .get(notAuth, (req, res) => Topic.findById(req.params.id)
     .then(topic =>  {
       if (req.query.populate && req.query.populate === 'true') {
-        return topic.populate('centerPanel.author')
-          .populate('leftPanel.author').populate('rightPanel.author').execPopulate();
+        return topic.populate('centerPanel.author', REDUCED_USER_FIELDS)
+          .populate('leftPanel.author', REDUCED_USER_FIELDS)
+          .populate('rightPanel.author', REDUCED_USER_FIELDS).execPopulate();
       }
       return new Promise(r => r(topic));
     })

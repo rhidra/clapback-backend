@@ -1,6 +1,6 @@
 import * as express from 'express';
 import mongoose, {MongooseDocument} from 'mongoose';
-import {hasPerm, sendData, sendData_cb, sendError} from '../middleware/utils';
+import {hasPerm, REDUCED_USER_FIELDS, sendData, sendData_cb, sendError} from '../middleware/utils';
 import Comment from '../models/CommentModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
@@ -30,7 +30,7 @@ router.route('/')
     Comment.find(q)
       .then(docs => {
         if (req.query.populate && req.query.populate === 'true') {
-          return Promise.all(docs.map(e => e.populate('user').execPopulate()));
+          return Promise.all(docs.map(e => e.populate('user', REDUCED_USER_FIELDS).execPopulate()));
         }
         return Promise.resolve(docs);
       })
@@ -58,7 +58,7 @@ router.route('/:id')
  */
   .get(notAuth, (req, res) => Comment
     .findById(req.params.id)
-    .populate('user')
+    .populate('user', REDUCED_USER_FIELDS)
     .exec()
     .then((doc: any) => req.user ? doc.addHasLiked((req.user as any)._id) : Promise.resolve(doc))
     .then(doc => sendData(res, null, doc)))

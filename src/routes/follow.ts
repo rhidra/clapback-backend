@@ -1,6 +1,6 @@
 import * as express from 'express';
 import mongoose from 'mongoose';
-import {hasPerm, sendData, sendData_cb, sendError, sendSuccess} from '../middleware/utils';
+import {hasPerm, REDUCED_USER_FIELDS, sendData, sendData_cb, sendError, sendSuccess} from '../middleware/utils';
 import Following from '../models/FollowingModel';
 import Follower from '../models/FollowerModel';
 import jwt from 'express-jwt';
@@ -87,7 +87,7 @@ router.delete('/:id', auth, guard.check('user'), (req, res) => {
  */
 router.get('/followers/:id', auth, guard.check('user'), (req, res) => Follower
   .findOne({user: req.params.id})
-  .then(doc => doc && req.query.populate ? doc.populate('followers').execPopulate() : doc)
+  .then(doc => doc && req.query.populate ? doc.populate('followers', REDUCED_USER_FIELDS).execPopulate() : doc)
   .then(data => sendData(res, null, data))
 );
 
@@ -99,7 +99,7 @@ router.get('/followers/:id', auth, guard.check('user'), (req, res) => Follower
  */
 router.get('/following/:id', auth, guard.check('user'), (req, res) => Following
   .findOne({user: req.params.id})
-  .then(doc => doc && req.query.populate ? doc.populate('following').execPopulate() : doc)
+  .then(doc => doc && req.query.populate ? doc.populate('following', REDUCED_USER_FIELDS).execPopulate() : doc)
   .then(data => sendData(res, null, data))
 );
 
