@@ -17,6 +17,7 @@ const auth = jwt({secret: process.env.JWT_SECRET});
 /**
  * POST /auth/registration
  * Classic email/password registration
+ * @body {email, password}
  */
 router.post('/register', (req: express.Request, res: express.Response) => {
   const email = req.body.email;
