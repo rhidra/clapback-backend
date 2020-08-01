@@ -36,7 +36,7 @@ router.route('/')
     if (req.query.tags) { q.hashtags = { $all: req.query.tags }; }
     if (req.query.userFollow) {
       const following: any = await Following.findOne({user: req.query.userFollow}).exec();
-      q.user = { $in: following.following };
+      q.user = { $in: following ? following.following : [] };
     }
 
     Reaction.find(q)
