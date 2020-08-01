@@ -2,6 +2,7 @@ import * as express from 'express';
 import mongoose from 'mongoose';
 import {hasPerm, REDUCED_USER_FIELDS, sendData, sendData_cb, sendError} from '../middleware/utils';
 import Reaction from '../models/ReactionModel';
+import Following from '../models/FollowingModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 
@@ -15,22 +16,28 @@ router.route('/')
 
 /**
  * GET /reaction
- * Send all reaction
+ * Send all reaction with some constraints
  * @param populate (optionnal) Populate the user field. The topic field is never populated.
- * @param topic Id of the topic
+ * @param topic Id of the topic constraint
  * @param tags Search by hashtags
- * @param user Id of the user
+ * @param user Id of the user constraint
+ * @param userFollow Filter by followings of a the user (used in activity), has priority over "user"
  */
-  .get(notAuth, (req, res) => {
+  .get(notAuth, async (req, res) => {
     if ((!req.user || !hasPerm(req, 'creator'))
-      && !req.query.topic && !req.query.user && !req.query.tags) {
-      return sendError('Topic unspecified', res, 400);
+      && !req.query.topic && !req.query.user && !req.query.tags && !req.query.userFollow) {
+      return sendError('Topic, user, tags or userFollow unspecified', res, 400);
     }
 
     const q: any = {};
+
     if (req.query.topic) { q.topic = req.query.topic; }
     if (req.query.user) { q.user = req.query.user; }
     if (req.query.tags) { q.hashtags = { $all: req.query.tags }; }
+    if (req.query.userFollow) {
+      const following: any = await Following.findOne({user: req.query.userFollow}).exec();
+      q.user = { $in: following.following };
+    }
 
     Reaction.find(q)
       .then(docs => {
@@ -100,5 +107,10 @@ router.route('/:id')
     }
     Reaction.findOneAndDelete({_id: req.params.id}, sendData_cb(res));
   });
+
+/**
+ * GET /reaction/activity/:userId
+ * Similar to GET /reaction, but group
+ */
 
 export = router;
