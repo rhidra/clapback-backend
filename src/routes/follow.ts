@@ -54,8 +54,8 @@ router.post('/', auth, guard.check('user'), (req, res) => {
 
 /**
  * DELETE /follow/:id
- * @param follower ID of the follower (Only for admins)
  * Unfollow a user
+ * @param follower ID of the follower (Only for admins)
  */
 router.delete('/:id', auth, guard.check('user'), (req, res) => {
   const followed = req.params.id;
