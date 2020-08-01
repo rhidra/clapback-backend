@@ -4,7 +4,6 @@ import {hasPerm, REDUCED_USER_FIELDS, sendData, sendData_cb, sendError} from '..
 import Reaction from '../models/ReactionModel';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
-import has = Reflect.has;
 
 const db = mongoose.connection;
 const router = express.Router();
