@@ -2,15 +2,7 @@ import upload from '../middleware/upload';
 import fs from 'fs';
 import Jimp from 'jimp';
 import uuidv4 from 'uuid/v4';
-import {
-  buildModifiedFilename,
-  buildPath,
-  buildUrl,
-  clamp,
-  getExtension,
-  sendError,
-  sendSuccess
-} from '../middleware/utils';
+import {buildModifiedFilename, buildPath, buildUrl, clamp, getExtension, sendError, sendSuccess, fileExists} from '../middleware/utils';
 import * as path from 'path';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
@@ -41,6 +33,19 @@ function extractOptions(req: Request): [ImageOptions, boolean] {
   opt.height = +req.query.height ? clamp(+req.query.height, 0) : undefined;
   const thumbnail = 'thumbnail' in req.query;
   return [opt, thumbnail];
+}
+
+// Parse abcd-1234-EF56-tre0_q100_w450_h200.png
+function parseFilename(uri: string): [string, string, ImageOptions, string, boolean] {
+  const imgReg = /^([a-zA-Z0-9\/\-]*)(_q1?[0-9]?[0-9])?(_w[0-9]+)?(_h[0-9]+)?\.(.*)$/;
+  const [fullname, fileId, q, w, h, ext] = imgReg.exec(uri);
+
+  const opt = new ImageOptions();
+  opt.quality = q ? clamp(+q.slice(2), 0, 100) : undefined;
+  opt.width = w ? clamp(+w.slice(2), 0) : undefined;
+  opt.height = h ? clamp(+h.slice(2), 0) : undefined;
+
+  return [fullname, ext.toLowerCase(), opt, fileId, false];
 }
 
 function modifyImage(image: any, filename: string, opt: ImageOptions, out?: string) {
@@ -88,18 +93,27 @@ router.post('/', auth, upload.single('media'), (req, res) => {
 });
 
 router.route('/:filename')
-  .get((req, res) => {
-    const ext = getExtension(req.params.filename);
-    const [opt, thumbnail] = extractOptions(req);
+  .get(async (req, res) => {
+    const [fullname, ext, opt, fileId, thumbnail] = parseFilename(req.params.filename);
+    const originalFile = 'public/media/' + fileId + '.' + ext;
+    const sentFile = 'public/media/' + fullname;
 
-    if (supportedImages.includes(ext)) {
-      const filename = buildModifiedFilename(req.params.filename, opt);
+    if (supportedImages.includes(ext) && process.env.NODE_ENV === 'production') {
+      if (await fileExists(originalFile)) {
+        await modifyImage(originalFile, fullname, opt);
+        await res.sendFile(path.join(process.cwd(), sentFile));
+      } else {
+        sendError('File does not exists', res, 400);
+      }
 
-      new Promise((r, c) => fs.access(buildPath(filename), e => e ? c() : r()))
-        .then(() => res.sendFile(path.join(process.cwd(), buildPath(filename))))
-        .catch(() => modifyImage(buildPath(req.params.filename), filename, opt)
-          .then(() => res.sendFile(path.join(process.cwd(), buildPath(filename))))
-        );
+    } else if (supportedImages.includes(ext)) {
+      if (await fileExists(sentFile)) {
+        await res.sendFile(path.join(process.cwd(), sentFile));
+      } else {
+        await modifyImage(originalFile, fullname, opt);
+        await res.sendFile(path.join(process.cwd(), sentFile));
+      }
+
     } else if (supportedVideos.includes(ext) && thumbnail) {
       const tbPath = path.join(process.cwd(), 'public/thumbnail/' + req.params.filename + '.png');
       const tbPathModified = path.join(process.cwd(),
@@ -110,12 +124,14 @@ router.route('/:filename')
           .then(() => modifyImage(tbPath, null, opt, tbPathModified))
           .then(() => res.sendFile(tbPathModified));
       });
+
     } else if (supportedVideos.includes(ext)) {
       res.sendFile(path.join(process.cwd(), buildPath(req.params.filename)));
     } else {
       sendError('File format unsupported !', res);
     }
   })
+
   .delete((req, res) => {
     fs.unlinkSync(buildPath(req.params.filename));
     sendSuccess(res);

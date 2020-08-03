@@ -1,6 +1,7 @@
 import * as express from 'express';
 import * as mongoose from 'mongoose';
 import crypto from 'crypto';
+import fs from 'fs';
 
 /* ROUTING PATH */
 export function handleError(err: mongoose.Error | any, res?: express.Response, errorCode: number = 500) {
@@ -83,6 +84,11 @@ export function buildModifiedFilename(filename: string, opt: any, extension: str
     + (opt.width ? '_w' + opt.width : '')
     + (opt.height ? '_h' + opt.height : '')
     + '.' + extension;
+}
+
+export function fileExists(filepath: string): Promise<boolean> {
+  // Input like 'public/media/abcd-1234.png'
+  return new Promise(r => fs.access(filepath, e => e ? r(false) : r(true)));
 }
 
 export function buildPath(filename: string): string {
