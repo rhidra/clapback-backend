@@ -2,11 +2,12 @@ import upload from '../middleware/upload';
 import fs from 'fs';
 import Jimp from 'jimp';
 import uuidv4 from 'uuid/v4';
-import {buildModifiedFilename, buildPath, buildUrl, clamp, getExtension, sendError, sendSuccess, fileExists} from '../middleware/utils';
+import {buildModifiedFilename, buildPath, buildUrl, clamp, getExtension, sendError, sendSuccess, fileExists,
+  devOnly} from '../middleware/utils';
 import * as path from 'path';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
-import {Router, Request} from 'express';
+import {Router, Request, Response} from 'express';
 // tslint:disable-next-line:no-var-requires
 const genThumbnail = require('simple-thumbnail');
 // tslint:disable-next-line:no-var-requires
@@ -19,7 +20,6 @@ const guard = express_jwt_permissions();
 
 // Media file supported format
 const supportedImages = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif'];
-const supportedVideos = ['mp4'];
 
 class ImageOptions {
   quality: number;
@@ -86,7 +86,7 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
   if (supportedImages.includes(ext)) {
     await modifyImage(req.file.buffer, filename, opt);
     await res.send({filename: buildUrl(filename)});
-  } else if (supportedVideos.includes(ext)) {
+  } else if (ext === 'mp4') {
     const fileMP4Path = 'public/mp4/' + filename;
     fs.writeFileSync(fileMP4Path, req.file.buffer);
     res.send({filename: buildUrl(filename)});
@@ -162,7 +162,7 @@ router.route('/:filename')
         await res.sendFile(path.join(process.cwd(), sentFile));
       }
 
-    } else if (supportedVideos.includes(ext) && thumbnail) {
+    } else if (ext === 'mp4' && thumbnail && false) {
       const tbPath = path.join(process.cwd(), 'public/thumbnail/' + req.params.filename + '.png');
       const tbPathModified = path.join(process.cwd(),
         'public/thumbnail/' + buildModifiedFilename(req.params.filename, opt, 'png'));
@@ -173,8 +173,6 @@ router.route('/:filename')
           .then(() => res.sendFile(tbPathModified));
       });
 
-    } else if (supportedVideos.includes(ext)) {
-      res.sendFile(path.join(process.cwd(), buildPath(req.params.filename)));
     } else {
       sendError('File format unsupported !', res);
     }
@@ -184,5 +182,22 @@ router.route('/:filename')
     fs.unlinkSync(buildPath(req.params.filename));
     sendSuccess(res);
   });
+
+router.get('/video/:fileid/mp4', devOnly, async (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public/mp4', req.params.fileid + '.mp4'));
+});
+
+router.get('/video/:fileid/hls', devOnly, async (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public/hls', req.params.fileid, 'master.m3u8'));
+});
+
+router.get('/video/:fileid/stream_:v.m3u8', devOnly, async (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public/hls', req.params.fileid, 'stream_' + req.params.v + '.m3u8'));
+});
+
+router.get('/video/:fileid/stream_:v/data_:seg.ts', devOnly, async (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public/hls', req.params.fileid, 'stream_' + req.params.v,
+    'data_' + req.params.seg + '.ts'));
+});
 
 export = router;
