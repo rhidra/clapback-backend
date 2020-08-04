@@ -37,7 +37,7 @@ function extractOptions(req: Request): [ImageOptions, boolean] {
 }
 
 // Parse abcd-1234-EF56-tre0_q100_w450_h200.png
-function parseFilename(uri: string): [string, string, ImageOptions, string, boolean] {
+function parseFilename(uri: string): [string, string, ImageOptions, string] {
   const imgReg = /^([a-zA-Z0-9\/\-]*)(_q1?[0-9]?[0-9])?(_w[0-9]+)?(_h[0-9]+)?\.(.*)$/;
   const [fullname, fileId, q, w, h, ext] = imgReg.exec(uri);
 
@@ -46,7 +46,7 @@ function parseFilename(uri: string): [string, string, ImageOptions, string, bool
   opt.width = w ? clamp(+w.slice(2), 0) : undefined;
   opt.height = h ? clamp(+h.slice(2), 0) : undefined;
 
-  return [fullname, ext.toLowerCase(), opt, fileId, false];
+  return [fullname, ext.toLowerCase(), opt, fileId];
 }
 
 function modifyImage(image: any, filename: string, opt: ImageOptions, out?: string) {
@@ -57,7 +57,7 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
     if (opt.width && opt.height) {
       img = img.crop((img.bitmap.width - opt.width) / 2, (img.bitmap.height - opt.height) / 2, opt.width, opt.height);
     }
-    img.write(out ? out : buildPath(filename), r);
+    img.write(out ? out : 'public/image/' + filename, r);
   }));
 }
 
@@ -91,12 +91,15 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     fs.writeFileSync(fileMP4Path, req.file.buffer);
     res.send({filename: buildUrl(filename)});
 
+    // Thumbnail generation
+    const tbPath = path.join(process.cwd(), 'public/thumbnail', fileId + '.png');
+    await genThumbnail(fileMP4Path, tbPath, '150x?', {path: ffmpeg});
+
     // Video encoding in HLS for adaptive bitrate and resolution streaming
     // Reference : https://www.martin-riedl.de/2020/04/17/using-ffmpeg-as-a-hls-streaming-server-overview/
     const hlsPath = path.join(process.cwd(), `public/hls/${fileId}`);
     fs.mkdirSync(hlsPath, {recursive: true});
     const ffmpegExec = path.join(path.dirname(require.resolve('ffmpeg-static')), 'ffmpeg');
-    console.log(path.join(process.cwd(), `public/hls/${fileId}`));
     const child = spawn(ffmpegExec, [
       '-i', `${path.join(process.cwd(), fileMP4Path)}`,
       // Creates two video feed, down scaling the resolution
@@ -140,13 +143,17 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
   }
 });
 
-router.route('/:filename')
+router.route('/image/:filename')
   .get(async (req, res) => {
-    const [fullname, ext, opt, fileId, thumbnail] = parseFilename(req.params.filename);
-    const originalFile = 'public/media/' + fileId + '.' + ext;
-    const sentFile = 'public/media/' + fullname;
+    const [fullname, ext, opt, fileId] = parseFilename(req.params.filename);
+    const originalFile = 'public/image/' + fileId + '.' + ext;
+    const sentFile = 'public/image/' + fullname;
 
-    if (supportedImages.includes(ext) && process.env.NODE_ENV === 'production') {
+    if (!supportedImages.includes(ext)) {
+      return sendError('File format unsupported !', res, 400);
+    }
+
+    if (process.env.NODE_ENV === 'production') {
       if (await fileExists(originalFile)) {
         await modifyImage(originalFile, fullname, opt);
         await res.sendFile(path.join(process.cwd(), sentFile));
@@ -154,27 +161,11 @@ router.route('/:filename')
         sendError('File does not exists', res, 400);
       }
 
-    } else if (supportedImages.includes(ext)) {
-      if (await fileExists(sentFile)) {
-        await res.sendFile(path.join(process.cwd(), sentFile));
-      } else {
-        await modifyImage(originalFile, fullname, opt);
-        await res.sendFile(path.join(process.cwd(), sentFile));
-      }
-
-    } else if (ext === 'mp4' && thumbnail && false) {
-      const tbPath = path.join(process.cwd(), 'public/thumbnail/' + req.params.filename + '.png');
-      const tbPathModified = path.join(process.cwd(),
-        'public/thumbnail/' + buildModifiedFilename(req.params.filename, opt, 'png'));
-      fs.access(tbPathModified, e => {
-        if (!e) { return res.sendFile(tbPathModified); }
-        genThumbnail(buildPath(req.params.filename), tbPath, '150x?', {path: ffmpeg})
-          .then(() => modifyImage(tbPath, null, opt, tbPathModified))
-          .then(() => res.sendFile(tbPathModified));
-      });
-
     } else {
-      sendError('File format unsupported !', res);
+      if (!await fileExists(sentFile)) {
+        await modifyImage(originalFile, fullname, opt);
+      }
+      await res.sendFile(path.join(process.cwd(), sentFile));
     }
   })
 
@@ -182,6 +173,16 @@ router.route('/:filename')
     fs.unlinkSync(buildPath(req.params.filename));
     sendSuccess(res);
   });
+
+router.get('/video/:fileid/thb', async (req: Request, res: Response) => {
+  const [fullname, _, opt, fileId] = parseFilename(req.params.fileid + '.png');
+  const originalFile = 'public/thumbnail/' + fileId + '.png';
+  const sentFile = 'public/thumbnail/' + fullname;
+  if (process.env.NODE_ENV === 'production' || !await fileExists(sentFile)) {
+    await modifyImage(originalFile, fullname, opt, sentFile);
+  }
+  await res.sendFile(path.join(process.cwd(), sentFile));
+});
 
 router.get('/video/:fileid/mp4', devOnly, async (req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), 'public/mp4', req.params.fileid + '.mp4'));

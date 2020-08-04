@@ -96,7 +96,7 @@ export function fileExists(filepath: string): Promise<boolean> {
 }
 
 export function buildPath(filename: string): string {
-  return 'public/media/' + filename;
+  return 'public/image/' + filename;
 }
 
 export function buildUrl(filename: string): string {
