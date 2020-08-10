@@ -13,6 +13,7 @@ const ReactionSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: Date, required: true, default: Date.now },
   hashtags: { type: [String], required: true },
+  status: { type: String, enum: ['processing', 'public'], default: 'processing', required: true },
 
   video: String,
   text: String,

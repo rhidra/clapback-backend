@@ -20,7 +20,7 @@ router.route('/')
    */
   .get(notAuth, (req, res) => Topic
     .find((req.query.approved && req.query.approved === 'true') || !req.user || !hasPerm(req, 'creator')
-                    ? {approved: true, date: {$lte: moment().toISOString()}} : {})
+                    ? {status: 'approved', date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
     .then(docs => {
       if (req.query.populate && req.query.populate === 'true') {
@@ -39,13 +39,19 @@ router.route('/')
    * POST /topic/
    * Create a news topic
    */
-  .post(auth, guard.check('creator'), (req, res) => Topic.create(req.body).then((topic: any) => {
-    if (!hasPerm(req, 'editor')) {
-      topic.approved = false;
-      topic.save();
+  .post(auth, guard.check('creator'), async (req, res) => {
+    try {
+      if (!hasPerm(req, 'editor')) {
+        const topic = await Topic.create(req.body);
+        topic.save();
+        await sendData(res, null, topic);
+      } else {
+        sendError('Unauthorized', res, 403);
+      }
+    } catch (err) {
+      sendError(err, res, 400);
     }
-    return sendData(res, null, topic);
-  }).catch(err => sendError(err, res)));
+  });
 
 router.route('/:id')
 /**
@@ -64,7 +70,7 @@ router.route('/:id')
     })
     .then((doc: any) => req.user ? doc.addHasLiked((req.user as any)._id) : Promise.resolve(doc))
     .then((topic: any) => {
-      if ((!req.user || !hasPerm(req, 'creator')) && !topic.approved) {
+      if ((!req.user || !hasPerm(req, 'creator')) && topic.status !== 'approved') {
         return sendError('Unauthorized', res, 403);
       }
       return sendData(res, null, topic);
@@ -75,7 +81,7 @@ router.route('/:id')
   .post(auth, guard.check('creator'),
     (req, res) => Topic.findOneAndUpdate({_id: req.params.id}, req.body).then((topic: any) => {
       if (!hasPerm(req, 'editor')) {
-        topic.approved = false;
+        topic.status = 'private';
         topic.save();
       }
       return sendData(res, null, topic);

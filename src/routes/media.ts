@@ -90,8 +90,7 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     fs.writeFileSync(fileMP4Path, req.file.buffer);
 
     videoQueue.addToQueue(fileId, fileMP4Path);
-    res.send({filename: buildUrl(filename)});
-
+    res.send({filename: '/media/video/' + fileId + '.m3u8'});
   } else {
     sendError('File format unsupported !', res);
   }
