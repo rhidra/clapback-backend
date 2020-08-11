@@ -20,7 +20,7 @@ router.route('/')
    */
   .get(notAuth, (req, res) => Topic
     .find((req.query.approved && req.query.approved === 'true') || !req.user || !hasPerm(req, 'creator')
-                    ? {status: 'approved', date: {$lte: moment().toISOString()}} : {})
+                    ? {status: 'public', date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
     .then(docs => {
       if (req.query.populate && req.query.populate === 'true') {

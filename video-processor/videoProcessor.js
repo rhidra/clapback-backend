@@ -164,10 +164,10 @@ function isVideoProcessed(filepath) {
     return true;
   }
 
-  const [_, fileId, ext] = /\/media\/(.*).(m3u8|mp4)/.exec(filepath);
-  if (ext === 'm3u8') {
+  const [_, fileId, prot] = /\/media\/(.*)\/(hls|mp4)/.exec(filepath);
+  if (prot === 'hls') {
     filepath = `public/hls/${fileId}/master.m3u8`;
-  } else if (ext === 'mp4') {
+  } else if (prot === 'mp4') {
     filepath = `public/mp4/${fileId}.mp4`;
   } else {
     throw Error('File extension unknown in DB update for' + fileId);
