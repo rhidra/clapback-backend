@@ -93,14 +93,14 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
 
   if (supportedImages.includes(ext)) {
     await modifyImage(req.file.buffer, filename, opt);
-    await res.send({filename: `/media/image/${fileId}.${ext}`});
+    await res.send({filename: `${fileId}.${ext}`});
   } else if (ext === 'mp4') {
     const fileMP4Path = 'public/mp4/' + filename;
 
     fs.writeFileSync(fileMP4Path, req.file.buffer);
 
     videoQueue.addToQueue(fileId, fileMP4Path);
-    res.send({filename: `/media/video/${fileId}/hls`});
+    res.send({filename: fileId});
   } else {
     sendError('File format unsupported !', res);
   }
