@@ -61,12 +61,22 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
 
 /** MEDIA SERVER
  *
- * POST /media?quality=**&width=**&height=**
+ * POST /media?quality=??&width=??&height=??
  * Upload a single file and return the url path, and change the quality and size.
  *
- * GET /media/:filename?quality=**&width=**&height=**&thumbnail
- * Return the file data with the quality and size requested.
- * If the file is a video, the thumbnail parameter returns an image thumbnail.
+ * GET /media/image/:fileid_q??_w??_h??.jpg
+ * Return an image. The q, w and h parameters to specify the quality, width and height are optionals.
+ * The image is modified once and then a cached version is used.
+ *
+ * GET /media/video/:fileid/mp4
+ * Return a MP4 video file. Deprecated.
+ *
+ * GET /media/video/:fileid/hls
+ * Return a HLS master playlist (master.m3u8). Used by HLS streaming player.
+ *
+ * GET /media/video/:fileid_q??_w??_h??/thb
+ * Return the thumbnail of a video. The thumbnail of the video can be modified
+ * by the image parameters q, w and h. The original thumbnail is created only once for each video.
  *
  * DELETE /media/:filename
  * Delete a file on the disk
