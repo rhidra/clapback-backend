@@ -227,4 +227,9 @@ function isVideoProcessed(filepath: string): Promise<boolean> {
   return new Promise(r => fs.access(filepath, e => e ? r(false) : r(true)));
 }
 
+process.on('SIGINT', () => {
+  videoQueue.onShutdown();
+  process.exit(0);
+});
+
 export = router;

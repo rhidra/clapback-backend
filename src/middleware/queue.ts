@@ -50,4 +50,9 @@ export class VideoEncodingQueue {
       this.registeredFunc = func;
     }
   }
+
+  onShutdown() {
+    this.channel.close();
+    this.connection.close();
+  }
 }

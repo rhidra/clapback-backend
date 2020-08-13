@@ -134,3 +134,10 @@ async function processVideo(fileId, fileMP4Path) {
     });
   });
 }
+
+process.on('SIGINT', () => {
+  channel_in.close();
+  channel_out.close();
+  connection.close();
+  process.exit(0);
+});
