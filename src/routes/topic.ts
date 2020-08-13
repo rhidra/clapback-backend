@@ -41,7 +41,7 @@ router.route('/')
    */
   .post(auth, guard.check('creator'), async (req, res) => {
     try {
-      if (!hasPerm(req, 'editor')) {
+      if (hasPerm(req, 'editor')) {
         const topic = await Topic.create(req.body);
         topic.save();
         await sendData(res, null, topic);
