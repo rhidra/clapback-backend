@@ -9,37 +9,43 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 
-const queue = 'video_encoding';
+const queue_in = 'video_encoding_in';
+const queue_out = 'video_encoding_out'
 let connection = null;
-let channel = null;
+let channel_in = null;
+let channel_out = null;
 
 
 const dbURI = process.env.NODE_ENV === 'development' ? 'mongodb://localhost:27017/zuoyou' : `mongodb://mongo:27017/zuoyou`;
 let clientDB = new MongoClient(dbURI);
 let db = null;
 
-function tryConnectionMQ() {
-  amqp.connect('amqp://localhost', (e, conn) => {
+async function tryConnectionMQ() {
+  amqp.connect('amqp://localhost', async (e, conn) => {
     if (e) {
       setTimeout(() => tryConnectionMQ(), 50);
     } else {
       connection = conn;
-      conn.createChannel((err, chan) => {
-        channel = chan;
 
-        channel.assertQueue(queue, {durable: true});
-        channel.prefetch(1); // Only consume one item at a time
-        channel.consume(queue, (m) => processData(m), {noAck: false});
+      // Create the in channel
+      connection.createChannel((err, chan) => {
+        channel_in = chan;
+
+        channel_in.assertQueue(queue_in, {durable: true});
+        channel_in.prefetch(1); // Only consume one item at a time
+        channel_in.consume(queue_in, (m) => processData(m), {noAck: false});
         console.log('Waiting for video to encode...');
       });
+
+      // Create the out channel
+      channel_out = await connection.createConfirmChannel();
+      channel_out.assertQueue(queue_out, {durable: true});
+      channel_out.prefetch(1);
     }
   });
 }
 
 async function tryConnectionDB() {
-  console.log('Try connecting DB...');
-
-  console.log(clientDB);
   try  {
     await clientDB.connect();
     await clientDB.db('zuoyou').command({ping: 1});
@@ -61,11 +67,16 @@ async function processData(msg) {
   try {
     await processVideo(data.fileId, data.fileMP4Path);
     console.log(`Converted video file ${data.fileId} successfully !`);
-    await updateDB(data.fileId);
-    channel.ack(msg);
+    channel_out.sendToQueue(queue_out, Buffer.from(JSON.stringify({fileId: data.fileId})), {persistent: true}, (err, ok) => {
+      if (err === null) {
+        channel_in.ack(msg);
+      } else {
+        channel_in.nack(msg);
+      }
+    });
   } catch (e) {
     console.log(`Error during the conversion: ${e}`);
-    channel.nack(msg);
+    channel_in.nack(msg);
   }
 }
 

@@ -9,12 +9,14 @@ import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Router, Request, Response} from 'express';
 import {VideoEncodingQueue} from '../middleware/queue';
+import {ConsumeMessage} from 'amqplib';
 
 const router = Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
 const guard = express_jwt_permissions();
 
 const videoQueue = new VideoEncodingQueue();
+videoQueue.registerOut(updateProcessingState);
 
 // Media file supported format
 const supportedImages = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif'];
@@ -163,5 +165,12 @@ router.get('/video/:fileid/stream_:v/data_:seg.ts', devOnly, async (req: Request
   res.sendFile(path.join(process.cwd(), 'public/hls', req.params.fileid, 'stream_' + req.params.v,
     'data_' + req.params.seg + '.ts'));
 });
+
+function updateProcessingState(msg: ConsumeMessage) {
+  return new Promise((resolve, reject) => {
+    console.log('Received message !', msg);
+    resolve();
+  });
+}
 
 export = router;

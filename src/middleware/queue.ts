@@ -4,24 +4,28 @@ import {Channel, Connection, ConsumeMessage} from 'amqplib';
 export class VideoEncodingQueue {
   connection: Connection;
   channel: Channel;
-  queue: string = 'video_encoding';
+  queueIn: string = 'video_encoding_in';
+  queueOut: string = 'video_encoding_out';
+
+  registeredFunc: any = null;
 
   constructor() {
     this.tryConnection();
   }
 
-  tryConnection() {
-    amqp.connect('amqp://localhost', (e, conn: Connection) => {
+  async tryConnection() {
+    amqp.connect('amqp://localhost', async (e, conn: Connection) => {
       if (e) {
         setTimeout(() => this.tryConnection(), 50);
       } else {
         this.connection = conn;
 
-        // @ts-ignore
-        conn.createChannel((err: Error, channel: Channel) => {
-          this.channel = channel;
-          this.channel.assertQueue(this.queue, {durable: true});
-        });
+        this.channel = await this.connection.createChannel();
+        await this.channel.assertQueue(this.queueIn, {durable: true});
+        await this.channel.assertQueue(this.queueOut, {durable: true});
+        if (this.registeredFunc) {
+          this.registerOut(this.registeredFunc);
+        }
       }
     });
   }
@@ -29,17 +33,21 @@ export class VideoEncodingQueue {
   addToQueue(fileId: string, fileMP4Path: string) {
     if (this.connection && this.channel) {
       const msg = {fileId, fileMP4Path};
-      this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(msg)), {persistent: true});
+      this.channel.sendToQueue(this.queueIn, Buffer.from(JSON.stringify(msg)), {persistent: true});
     } else {
       throw Error('No connection to RabbitMQ !');
     }
   }
 
-  readFromQueue(func: Function) {
+  registerOut(func: Function) {
     if (this.connection && this.channel) {
-      this.channel.consume(this.queue, (data: ConsumeMessage) => func(data.content.toJSON()), {noAck: true});
+      this.channel.consume(this.queueOut,
+        (msg: ConsumeMessage) => func(JSON.parse(msg.content.toString()))
+          .then(() => this.channel.ack(msg))
+          .catch(() => this.channel.nack(msg)),
+        {noAck: false});
     } else {
-      throw Error('No connection to RabbitMQ !');
+      this.registeredFunc = func;
     }
   }
 }
