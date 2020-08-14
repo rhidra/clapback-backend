@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import {addHasLiked} from '../middleware/utils';
+import {addHasLiked, isVideoProcessed} from '../middleware/utils';
 
 const Schema = mongoose.Schema;
 
@@ -42,6 +42,12 @@ const TopicSchema = new Schema({
 
 TopicSchema.methods.addHasLiked = function(userId: string): Promise<any> {
     return addHasLiked(this, 'topic', userId);
+};
+
+TopicSchema.methods.isProcessed = async function(): Promise<boolean> {
+    return await isVideoProcessed(this.centerPanel.video)
+        && await isVideoProcessed(this.leftPanel.video)
+        && await isVideoProcessed(this.rightPanel.video);
 };
 
 export = mongoose.model('Topic', TopicSchema);

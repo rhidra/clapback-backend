@@ -42,7 +42,8 @@ router.route('/')
   .post(auth, guard.check('creator'), async (req, res) => {
     try {
       if (hasPerm(req, 'editor')) {
-        const topic = await Topic.create(req.body);
+        const topic: any = await Topic.create(req.body);
+        topic.status = (await topic.isProcessed()) ? topic.status : 'processing';
         topic.save();
         await sendData(res, null, topic);
       } else {
@@ -78,14 +79,22 @@ router.route('/:id')
   )
 
   // Modify a specific news topic
-  .post(auth, guard.check('creator'),
-    (req, res) => Topic.findOneAndUpdate({_id: req.params.id}, req.body).then((topic: any) => {
-      if (!hasPerm(req, 'editor')) {
-        topic.status = 'private';
-        topic.save();
+  .post(auth, guard.check('creator'), async (req, res) => {
+      try {
+        const topic: any = await Topic.findOneAndUpdate({_id: req.params.id}, req.body, {new: true});
+        let status = null;
+        status = !hasPerm(req, 'editor') ? 'private' : status;
+        status = !await topic.isProcessed() ? 'processing' : status;
+        console.log(status, await topic.isProcessed());
+        if (status) {
+          topic.status = status;
+          topic.save();
+        }
+        return sendData(res, null, topic);
+      } catch (err) {
+        sendError(err, res);
       }
-      return sendData(res, null, topic);
-    }).catch(err => sendError(err, res)))
+    })
 
   // Delete a specific news topic
   .delete(auth, guard.check('editor'), (req, res) => Topic.findOneAndDelete({_id: req.params.id}, sendData_cb(res)));

@@ -82,6 +82,15 @@ export function hasPerm(req: any, perm: string) {
 }
 
 /* MEDIA SERVER */
+export function isVideoProcessed(fileId: string): Promise<boolean> {
+  if (!fileId) {
+    return Promise.resolve(true);
+  }
+  const filepath = `public/hls/${fileId}/master.m3u8`;
+  console.log('check file', fileId);
+  return new Promise(r => fs.access(filepath, e => e ? r(false) : r(true)));
+}
+
 export function buildModifiedFilename(filename: string, opt: any, extension: string = getExtension(filename)) {
   return getFilename(filename)
     + (opt.quality ? '_q' + opt.quality : '')

@@ -2,8 +2,9 @@ import upload from '../middleware/upload';
 import fs from 'fs';
 import Jimp from 'jimp';
 import uuidv4 from 'uuid/v4';
-import {buildPath, clamp, getExtension, sendError, sendSuccess, fileExists,
-  devOnly} from '../middleware/utils';
+import {
+  buildPath, clamp, getExtension, sendError, sendSuccess, fileExists,
+  devOnly, isVideoProcessed} from '../middleware/utils';
 import * as path from 'path';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
@@ -176,55 +177,28 @@ router.get('/video/:fileid/stream_:v/data_:seg.ts', devOnly, async (req: Request
 function updateProcessingState(data: { fileId: string }) {
   return new Promise(async (resolve, reject) => {
     const query = RegExp(`.*${data.fileId}.*`);
-    let ok;
 
-    ok = !!(await Reaction.updateOne({video: query}, {status: 'public'})).n;
-    if (!ok) {
-      ok = await updateTopic({'centerPanel.video': query}, ['leftPanel', 'rightPanel']);
-    }
-    if (!ok) {
-      ok = await updateTopic({'leftPanel.video': query}, ['centerPanel', 'rightPanel']);
-    }
-    if (!ok) {
-      ok = await updateTopic({'rightPanel.video': query}, ['centerPanel', 'leftPanel']);
-    }
-    if (!ok) {
-      setTimeout(() => reject(), 1000);
-      // TODO: Integrate this error to Sentry
-      console.error('No object corresponding to the video file ID !');
-    } else {
-      resolve();
+    const ok = !!(await Reaction.updateOne({video: query}, {status: 'public'})).n;
+    if (ok) {
       console.log(`Updated the database for ${data.fileId}`);
+      return resolve();
+    }
+
+    const topicQuery = {$or: [{'centerPanel.video': query}, {'leftPanel.video': query}, {'rightPanel.video': query}]};
+    const topic: any = await Topic.findOne(topicQuery);
+
+    if (!topic) {
+      // TODO: Integrate this error to Sentry
+      setTimeout(() => reject(), 1000);
+      console.error('No object corresponding to the video file ID !');
+    } else if (await ['centerPanel', 'leftPanel', 'rightPanel']
+              .every(async panel => await isVideoProcessed(topic[panel].video))) {
+      topic.status = 'private';
+      await topic.save();
+      console.log(`Updated the database for ${data.fileId}`);
+      resolve();
     }
   });
-}
-
-async function updateTopic(findQuery: {}, panelsToCheck: string[]) {
-  const topic: any = await Topic.findOne(findQuery);
-  if (!topic) {
-    return false;
-  }
-
-  if (await panelsToCheck.every(async panel => await isVideoProcessed(topic[panel].video))) {
-    await Topic.updateOne({_id: topic._id}, {$set: {status: 'private'}});
-  }
-  return true;
-}
-
-function isVideoProcessed(filepath: string): Promise<boolean> {
-  if (!filepath) {
-    return Promise.resolve(true);
-  }
-
-  const [_, fileId, prot] = /\/media\/(.*)\/(hls|mp4)/.exec(filepath);
-  if (prot === 'hls') {
-    filepath = `public/hls/${fileId}/master.m3u8`;
-  } else if (prot === 'mp4') {
-    filepath = `public/mp4/${fileId}.mp4`;
-  } else {
-    throw Error('File extension unknown in DB update for' + fileId);
-  }
-  return new Promise(r => fs.access(filepath, e => e ? r(false) : r(true)));
 }
 
 process.on('SIGINT', () => {
