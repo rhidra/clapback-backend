@@ -68,10 +68,10 @@ router.route('/')
       if (!hasPerm(req, 'admin') && (req.user as any)._id !== req.body.user) {
         return sendError('Wrong user !', res);
       }
-      const reaction: any = await Reaction.create(req.body, sendData_cb(res));
+      const reaction: any = await Reaction.create(req.body);
       reaction.isPublic = true;
       reaction.isProcessing = !await reaction.isProcessed();
-      reaction.save();
+      await reaction.save();
       await sendData(res, null, reaction);
     } catch (err) {
       sendError(err, res, 400);
