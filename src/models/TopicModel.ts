@@ -8,7 +8,8 @@ const TopicSchema = new Schema({
 
     hashtags: { type: [String], required: true },
     suggestedHashtags: [String], // TODO: Suggest hashtags in a smarter way
-    status: { type: String, enum: ['processing', 'private', 'public'], default: 'processing', required: true },
+    isPublic: { type: Boolean, default: false, required: true },
+    isProcessing: { type: Boolean, default: false, required: true },
     date: { type: Date, required: true },
 
     centerPanel: {

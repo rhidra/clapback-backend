@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import Topic from './TopicModel';
-import {addHasLiked, handleError} from '../middleware/utils';
+import {addHasLiked, handleError, isVideoProcessed} from '../middleware/utils';
 import User from './UserModel';
 
 const Schema = mongoose.Schema;
@@ -13,7 +13,8 @@ const ReactionSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: Date, required: true, default: Date.now },
   hashtags: { type: [String], required: true },
-  status: { type: String, enum: ['processing', 'public'], default: 'processing', required: true },
+  isPublic: { type: Boolean, default: true },
+  isProcessing: { type: Boolean, default: false },
 
   video: String,
   text: String,
@@ -39,6 +40,10 @@ ReactionSchema.post('remove', (doc: any) => {
 
 ReactionSchema.methods.addHasLiked = function(userId: string): Promise<any> {
   return addHasLiked(this, 'reaction', userId);
+};
+
+ReactionSchema.methods.isProcessed = async function(): Promise<boolean> {
+  return await isVideoProcessed(this.video);
 };
 
 export = mongoose.model('Reaction', ReactionSchema);

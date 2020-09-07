@@ -20,7 +20,7 @@ router.route('/')
    */
   .get(notAuth, (req, res) => Topic
     .find((req.query.approved && req.query.approved === 'true') || !req.user || !hasPerm(req, 'creator')
-                    ? {status: 'public', date: {$lte: moment().toISOString()}} : {})
+                    ? {isPublic: true, isProcessing: false, date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
     .then(docs => {
       if (req.query.populate && req.query.populate === 'true') {
@@ -41,14 +41,13 @@ router.route('/')
    */
   .post(auth, guard.check('creator'), async (req, res) => {
     try {
-      if (hasPerm(req, 'editor')) {
-        const topic: any = await Topic.create(req.body);
-        topic.status = (await topic.isProcessed()) ? topic.status : 'processing';
-        topic.save();
-        await sendData(res, null, topic);
-      } else {
-        sendError('Unauthorized', res, 403);
+      const topic: any = await Topic.create(req.body);
+      topic.isProcessing = !(await topic.isProcessed());
+      if (!hasPerm(req, 'editor')) {
+        topic.isPublic = false;
       }
+      topic.save();
+      await sendData(res, null, topic);
     } catch (err) {
       sendError(err, res, 400);
     }
@@ -71,7 +70,7 @@ router.route('/:id')
     })
     .then((doc: any) => req.user ? doc.addHasLiked((req.user as any)._id) : Promise.resolve(doc))
     .then((topic: any) => {
-      if ((!req.user || !hasPerm(req, 'creator')) && topic.status !== 'approved') {
+      if ((!req.user || !hasPerm(req, 'creator')) && !topic.isPublic) {
         return sendError('Unauthorized', res, 403);
       }
       return sendData(res, null, topic);
@@ -82,14 +81,9 @@ router.route('/:id')
   .post(auth, guard.check('creator'), async (req, res) => {
       try {
         const topic: any = await Topic.findOneAndUpdate({_id: req.params.id}, req.body, {new: true});
-        let status = null;
-        status = !hasPerm(req, 'editor') ? 'private' : status;
-        status = !await topic.isProcessed() ? 'processing' : status;
-        console.log(status, await topic.isProcessed());
-        if (status) {
-          topic.status = status;
-          topic.save();
-        }
+        topic.isPublic = hasPerm(req, 'editor') ? topic.isPublic : false;
+        topic.isProcessing = !await topic.isProcessed();
+        topic.save();
         return sendData(res, null, topic);
       } catch (err) {
         sendError(err, res);

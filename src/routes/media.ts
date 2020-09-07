@@ -178,7 +178,7 @@ function updateProcessingState(data: { fileId: string }) {
   return new Promise(async (resolve, reject) => {
     const query = RegExp(`.*${data.fileId}.*`);
 
-    const ok = !!(await Reaction.updateOne({video: query}, {status: 'public'})).n;
+    const ok = !!(await Reaction.updateOne({video: query}, {isProcessing: false})).n;
     if (ok) {
       console.log(`Updated the database for ${data.fileId}`);
       return resolve();
@@ -191,9 +191,8 @@ function updateProcessingState(data: { fileId: string }) {
       // TODO: Integrate this error to Sentry
       setTimeout(() => reject(), 1000);
       console.error('No object corresponding to the video file ID !');
-    } else if (await ['centerPanel', 'leftPanel', 'rightPanel']
-              .every(async panel => await isVideoProcessed(topic[panel].video))) {
-      topic.status = 'private';
+    } else if (await topic.isProcessed()) {
+      topic.isProcessing = false;
       await topic.save();
       console.log(`Updated the database for ${data.fileId}`);
       resolve();
