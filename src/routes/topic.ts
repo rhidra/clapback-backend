@@ -15,11 +15,11 @@ router.route('/')
   /**
    * GET /topic/
    * Retrieves all news topic
-   * @param approved Only approved topics
+   * @param isPublic Only approved topics
    * @param populate Populate the author fields in each panel
    */
   .get(notAuth, (req, res) => Topic
-    .find((req.query.approved && req.query.approved === 'true') || !req.user || !hasPerm(req, 'creator')
+    .find((req.query.approved && req.query.isPublic === 'true') || !req.user || !hasPerm(req, 'creator')
                     ? {isPublic: true, isProcessing: false, date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
     .then(docs => {
