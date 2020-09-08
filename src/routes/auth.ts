@@ -9,6 +9,7 @@ import passport from '../middleware/passport';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Mailer} from '../middleware/mail';
 import AuthUser from '../models/AuthUserModel';
+import axios from 'axios';
 
 const guard = express_jwt_permissions();
 const router = express.Router();
@@ -173,8 +174,23 @@ router.post('/phone', (req: express.Request, res: express.Response) => {
     .then(user => res.send({id: user._id}));
 });
 
-router.post('/phone/login', passport.authenticate('phone'), (req: express.Request, res: express.Response) => {
-  User.findOne({phone: req.body.phone}).then((user: any) => {
+router.post('/phone/login', async (req: express.Request, res: express.Response) => {
+  try {
+    await axios({
+      method: 'post',
+      url: 'https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPhoneNumber',
+      params: {key: process.env.FIREBASE_API_KEY},
+      data: {
+        sessionInfo: req.body.verificationId,
+        code: req.body.code,
+      },
+    });
+  } catch (err) {
+    return sendError(err, res, 403);
+  }
+
+  try {
+    let user: any = await User.findOne({phone: req.body.phone});
     if (user) {
       // Log the user in
       const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
@@ -188,7 +204,9 @@ router.post('/phone/login', passport.authenticate('phone'), (req: express.Reques
         res.json(Object.assign({refreshToken}, user.toAuthJSON()));
       });
     }
-  }).catch(() => sendError('', res));
+  } catch (err) {
+    return sendError('', res, 500);
+  }
 });
 
 export = router;
