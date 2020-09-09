@@ -17,11 +17,15 @@ router.route('/')
    * Retrieves all news topic
    * @param isPublic Only approved topics
    * @param populate Populate the author fields in each panel
+   * @param pageSize Number of elements retrieved (default: 10)
+   * @param page Offset
    */
   .get(notAuth, (req, res) => Topic
     .find((req.query.approved && req.query.isPublic === 'true') || !req.user || !hasPerm(req, 'creator')
                     ? {isPublic: true, isProcessing: false, date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
+    .skip(req.query.page * req.query.pageSize || 0)
+    .limit(+req.query.pageSize || 10)
     .then(docs => {
       if (req.query.populate && req.query.populate === 'true') {
         return Promise.all(docs.map(e => e.populate('centerPanel.author', REDUCED_USER_FIELDS)
