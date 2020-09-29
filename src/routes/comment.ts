@@ -19,6 +19,8 @@ router.route('/')
  * @param topic (mandatory if no reaction)
  * @param reaction (mandatory if no topic)
  * @param populate (optionnal)
+ * @param pageSize Number of elements retrieved (default: 10)
+ * @param page Offset
  */
   .get(notAuth, (req, res) => {
     if (!req.query.topic && !req.query.reaction) { return sendError('Topic or reaction unspecified', res, 400); }
@@ -28,6 +30,9 @@ router.route('/')
     if (req.query.reaction) { q.reaction = req.query.reaction; }
 
     Comment.find(q)
+      .sort({date: 'asc'})
+      .skip(req.query.page * req.query.pageSize || 0)
+      .limit(+req.query.pageSize || 10)
       .then(docs => {
         if (req.query.populate && req.query.populate === 'true') {
           return Promise.all(docs.map(e => e.populate('user', REDUCED_USER_FIELDS).execPopulate()));
