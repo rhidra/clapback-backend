@@ -21,6 +21,8 @@ router.route('/')
  * @param tags Search by hashtags
  * @param user Id of the user constraint
  * @param userFollow Filter by followings of a the user (used in activity), has priority over "user"
+ * @param page Offset
+ * @param pageSize Number of elements retrieved (default: 10)
  */
   .get(notAuth, async (req, res) => {
     if ((!req.user || !hasPerm(req, 'creator'))
@@ -47,6 +49,9 @@ router.route('/')
     }
 
     Reaction.find(q)
+      .sort({date: 'asc'})
+      .skip(req.query.page * req.query.pageSize || 0)
+      .limit(+req.query.pageSize || 10)
       .then(docs => {
         if (req.query.populate && req.query.populate === 'true') {
           return Promise.all(docs.map(e => e.populate('user', REDUCED_USER_FIELDS).execPopulate()));
