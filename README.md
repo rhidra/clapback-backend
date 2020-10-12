@@ -1,4 +1,4 @@
-# Zuoyou backend API
+# Clapback backend API
 
 ## Installation of dependancies
 
@@ -41,4 +41,4 @@ up the docker-compose file.
 ## SSH to the server
 
 To ssh to the server, use the RSA keys. The root user is `root` and the regular user is `api`. 
-The backend repository is located in `/home/api/zuoyou-backend`.
+The backend repository is located in `/home/api/clapback-backend`.

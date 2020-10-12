@@ -1,5 +1,5 @@
 {
-  "name": "zuoyou-backend",
+  "name": "clapback-backend",
   "version": "0.0.0",
   "private": true,
   "main": "dist/app.js",

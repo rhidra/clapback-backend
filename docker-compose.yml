@@ -1,4 +1,4 @@
-# Define the containers to have a functionnal backend API for the Zuoyou app
+# Define the containers to have a functionnal backend API for the Clapback app
 # Before starting first, to make nginx starts in HTTPS, you need to run init-letsencrypt.sh
 
 version: "3"
@@ -6,7 +6,7 @@ version: "3"
 services:
   # Main node/express REST server
   api:
-    container_name: zuoyou-backend
+    container_name: clapback-backend
     restart: always
     build: .
     ports:

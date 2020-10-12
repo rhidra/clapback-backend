@@ -24,4 +24,4 @@ deploy:
     - chmod 700 ~/.ssh
     - chmod 600 ~/.ssh/rsa_key
     - ssh-keyscan -H $DEPLOYMENT_SERVER_IP >> ~/.ssh/known_hosts
-    - ssh -i ~/.ssh/rsa_key api@api.zuoyoubycurios.com "cd zuoyou-backend; git pull; docker-compose build; docker-compose up -d"
+    - ssh -i ~/.ssh/rsa_key api@api.zuoyoubycurios.com "cd clapback-backend; git pull; docker-compose build; docker-compose up -d"

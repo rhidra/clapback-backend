@@ -63,7 +63,7 @@ router.get('/email/:token', (req, res) =>
     }
     return Promise.resolve();
   // TODO: Make a better redirection
-  }).then(() => res.redirect(process.env.NODE_ENV === 'production' ? 'http://zuoyou.cn/emailConfirmation' : 'http://google.com'))
+  }).then(() => res.redirect(process.env.NODE_ENV === 'production' ? `${process.env.HOST_URL}/emailConfirmation` : 'http://google.com'))
 );
 
 /**

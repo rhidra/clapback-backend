@@ -13,7 +13,7 @@ const UserSchema = new Schema({
     // Badge level of a user
     level: { type: String, required: true, default: 'level1', enum: ['level1', 'level2', 'level3'] },
 
-    // Is the user a member of the ZuoYou team ?
+    // Is the user a member of the team ?
     verified: { type: Boolean, default: false },
 
     // Permissions granted to the user
