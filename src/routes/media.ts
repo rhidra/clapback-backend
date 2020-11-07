@@ -4,7 +4,7 @@ import Jimp from 'jimp';
 import uuidv4 from 'uuid/v4';
 import {
   buildPath, clamp, getExtension, sendError, sendSuccess, fileExists,
-  devOnly, isVideoProcessed} from '../middleware/utils';
+  devOnly, isVideoProcessed, sendData} from '../middleware/utils';
 import * as path from 'path';
 import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
@@ -12,6 +12,7 @@ import {Router, Request, Response} from 'express';
 import {VideoEncodingQueue} from '../middleware/queue';
 import Reaction from '../models/ReactionModel';
 import Topic from '../models/TopicModel';
+import PendingMedia from '../models/PendingMediaModel';
 
 const router = Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
@@ -65,8 +66,13 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
 
 /** MEDIA SERVER
  *
+ * POST /media/alloc/:filename.mp4
+ * Allocate a filename to use as an uploaded file.
+ *
  * POST /media?quality=??&width=??&height=??
+ * @body {filename}
  * Upload a single file and return the url path, and change the quality and size.
+ * The body should contain a filename generated with POST /media/alloc/:filename
  *
  * GET /media/image/:fileid_q??_w??_h??.jpg
  * Return an image. The q, w and h parameters to specify the quality, width and height are optionals.
@@ -86,27 +92,49 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
  * Delete a file on the disk
  */
 
-router.post('/', auth, upload.single('media'), async (req, res) => {
-  if (!req.file) {
-    sendError('No media received !', res);
-  }
-  const ext = getExtension(req.file.originalname);
-  const [opt, _] = extractOptions(req);
+router.post('/alloc/:filename', auth, async (req, res) => {
+  const ext = getExtension(req.params.filename);
   const fileId = `${uuidv4()}`;
-  const filename = fileId + '.' + ext;
 
   if (supportedImages.includes(ext)) {
-    await modifyImage(req.file.buffer, filename, opt);
-    await res.send({filename: `${fileId}.${ext}`});
+    const media: any = new PendingMedia({filename: `${fileId}.${ext}`});
+    await media.save();
+    sendData(res, null, {filename: media.filename});
   } else if (ext === 'mp4') {
-    const fileMP4Path = 'public/mp4/' + filename;
-
-    fs.writeFileSync(fileMP4Path, req.file.buffer);
-
-    videoQueue.addToQueue(fileId, fileMP4Path);
-    res.send({filename: fileId});
+    const media: any = new PendingMedia({filename: fileId});
+    await media.save();
+    sendData(res, null, {filename: fileId});
   } else {
     sendError('File format unsupported !', res);
+  }
+});
+
+router.post('/', auth, upload.single('media'), async (req, res) => {
+  if (!req.file) {
+    return sendError('No media received !', res, 400);
+  } else if (!req.body.filename) {
+    return sendError('No file name received !', res, 400);
+  }
+  let fileRef: any = await PendingMedia.findOne({filename: req.body.filename});
+  if (!fileRef || !fileRef.filename) {
+    return sendError('The file name does not exists !', res, 400);
+  }
+  fileRef = fileRef.filename;
+
+  const ext = getExtension(req.file.originalname);
+  const [opt, _] = extractOptions(req);
+
+  if (supportedImages.includes(ext)) {
+    await modifyImage(req.file.buffer, fileRef, opt);
+    sendSuccess(res);
+  } else if (ext === 'mp4') {
+    const fileMP4Path = `public/mp4/${fileRef}.${ext}`;
+    fs.writeFileSync(fileMP4Path, req.file.buffer);
+
+    videoQueue.addToQueue(fileRef, fileMP4Path);
+    sendSuccess(res);
+  } else {
+    sendError('File format unsupported !', res, 400);
   }
 });
 

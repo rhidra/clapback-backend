@@ -7,8 +7,7 @@ import {NextFunction, Request, Response} from 'express';
 /* ROUTING PATH */
 export function handleError(err: mongoose.Error | any, res?: express.Response, errorCode: number = 500) {
   if (err && res) {
-    res.status(errorCode);
-    res.send(err);
+    res.status(errorCode).send(err);
   } else if (err) {
     console.error(err);
   }
