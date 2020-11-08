@@ -24,15 +24,15 @@ router.use(auth, guard.check('admin'));
  * All size units are in bytes.
  * @return {mp4: [string], hls: [string], mp4Size, hlsSize, thumbnailsSize}
  */
-router.get('/media/videos', (req, res) => {
+router.get('/media/videos', async (req, res) => {
   const mp4: string[] = fs.readdirSync(path.join(cwd, 'public/mp4'));
   const hls: string[] = fs.readdirSync(path.join(cwd, 'public/hls'));
   const thumbnailsSize = fs.readdirSync(path.join(cwd, 'public/thumbnail'))
     .reduce((s: number, tb: string) => s + fs.statSync(path.join(cwd, 'public/thumbnail', tb)).size, 0);
   const mp4Size = mp4
     .reduce((s: number, file: string) => s + fs.statSync(path.join(cwd, 'public/mp4', file)).size, 0);
-  const {stdout}: any = exec(`du -s ${path.join(cwd, 'public/hls')} | cut -f1`);
-  const hlsSize = +stdout;
+  const {stdout}: any = await exec(`du -s ${path.join(cwd, 'public/hls')} | cut -f1`);
+  const hlsSize = +stdout * 1000;
 
   res.json({mp4, hls, mp4Size, hlsSize, thumbnailsSize});
 });
@@ -45,9 +45,9 @@ router.get('/media/videos', (req, res) => {
  * @return {images: [string], size: number}
  */
 router.get('/media/images', (req, res) => {
-  const images: string[] = fs.readdirSync(path.join(cwd, 'public/images'));
+  const images: string[] = fs.readdirSync(path.join(cwd, 'public/image'));
   const size = images
-    .reduce((s: number, file: string) => s + fs.statSync(path.join(cwd, 'public/images', file)).size, 0);
+    .reduce((s: number, file: string) => s + fs.statSync(path.join(cwd, 'public/image', file)).size, 0);
 
   return sendData(res, null, {images, size});
 });
