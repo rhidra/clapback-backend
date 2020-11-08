@@ -88,8 +88,14 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
  * Return the thumbnail of a video. The thumbnail of the video can be modified
  * by the image parameters q, w and h. The original thumbnail is created only once for each video.
  *
- * DELETE /media/:filename
- * Delete a file on the disk
+ * DELETE /media/image/:filename
+ * Delete an image file on the disk
+ *
+ * DELETE /media/video/:filename/mp4
+ * Delete an MP4 file on the disk
+ *
+ * DELETE /media/video/:filename/hls
+ * Delete a group of HLS streaming files on the disk
  *
  * All media files are stored in public/ folder, in either images/, hls/ or mp4/.
  * When thumbnails are generated, they are moved to /thumbnail folder.
@@ -167,7 +173,7 @@ router.route('/image/:filename')
     }
   })
 
-  .delete((req, res) => {
+  .delete(auth, guard.check('admin'), (req, res) => {
     fs.unlinkSync(buildPath(req.params.filename));
     sendSuccess(res);
   });
@@ -197,6 +203,16 @@ router.get('/video/:fileid/stream_:v.m3u8', devOnly, async (req: Request, res: R
 router.get('/video/:fileid/stream_:v/data_:seg.ts', devOnly, async (req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), 'public/hls', req.params.fileid, 'stream_' + req.params.v,
     'data_' + req.params.seg + '.ts'));
+});
+
+router.delete('/video/:fileid/mp4', auth, guard.check('admin'), (req: Request, res: Response) => {
+  fs.unlinkSync(path.join(process.cwd(), 'public/mp4', `${req.params.fileid}.mp4`));
+  sendSuccess(res);
+});
+
+router.delete('/video/:fileid/hls', auth, guard.check('admin'), (req: Request, res: Response) => {
+  fs.rmdirSync(path.join(process.cwd(), 'public/hls', req.params.fileid), {recursive: true});
+  sendSuccess(res);
 });
 
 /**
