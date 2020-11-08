@@ -18,11 +18,12 @@ router.route('/')
  * @param populate (optionnal) Populate the user field. The topic field is never populated.
  * @param isProcessing Allow videos being processed (only for admins)
  * @param topic Id of the topic constraint
- * @param tags Search by hashtags
  * @param user Id of the user constraint
- * @param userFollow Filter by followings of a the user (used in activity), has priority over "user"
- * @param page Offset
+ * @param tags Search by hashtags
+ * @param userFollow Filter by the followings of a the user (used in the activity page), has priority over "user"
+ * @param page Offset page
  * @param pageSize Number of elements retrieved (default: 10)
+ * @param sort Sorting order (1: asc (old->new), -1: desc (new->old)) (default: asc)
  */
   .get(notAuth, async (req, res) => {
     if ((!req.user || !hasPerm(req, 'creator'))
@@ -49,7 +50,7 @@ router.route('/')
     }
 
     Reaction.find(q)
-      .sort({date: 'asc'})
+      .sort({date: +req.query.sort === -1 ? 'desc' : 'asc'})
       .skip(req.query.page * req.query.pageSize || 0)
       .limit(+req.query.pageSize || 10)
       .then(docs => {
