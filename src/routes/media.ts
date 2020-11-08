@@ -90,6 +90,9 @@ function modifyImage(image: any, filename: string, opt: ImageOptions, out?: stri
  *
  * DELETE /media/:filename
  * Delete a file on the disk
+ *
+ * All media files are stored in public/ folder, in either images/, hls/ or mp4/.
+ * When thumbnails are generated, they are moved to /thumbnail folder.
  */
 
 router.post('/alloc/:filename', auth, async (req, res) => {

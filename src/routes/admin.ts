@@ -3,31 +3,53 @@ import jwt from 'express-jwt';
 import express_jwt_permissions from 'express-jwt-permissions';
 import {Router} from 'express';
 import * as path from 'path';
-import {sendSuccess} from '../middleware/utils';
+import {sendData, sendSuccess} from '../middleware/utils';
 import check from 'check-disk-space';
+import util from 'util';
+import { exec as exec_ } from 'child_process';
 
 const router = Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
 const guard = express_jwt_permissions();
+const exec = util.promisify(exec_);
 const cwd: string = process.cwd();
 
 /*** ROUTES ONLY FOR ADMINS ! ***/
 router.use(auth, guard.check('admin'));
 
 /**
- * GET /admin/media
+ * GET /admin/media/videos
  * Only for admins.
- * Helps to clean the storage of the server.
- * @return {medias: [string], thumbnailsSize, mediasSize}
+ * Return infos on videos stored on the server.
+ * All size units are in bytes.
+ * @return {mp4: [string], hls: [string], mp4Size, hlsSize, thumbnailsSize}
  */
-router.get('/media', (req, res) => {
-  const medias: string[] = fs.readdirSync(path.join(cwd, 'public/media'));
+router.get('/media/videos', (req, res) => {
+  const mp4: string[] = fs.readdirSync(path.join(cwd, 'public/mp4'));
+  const hls: string[] = fs.readdirSync(path.join(cwd, 'public/hls'));
   const thumbnailsSize = fs.readdirSync(path.join(cwd, 'public/thumbnail'))
     .reduce((s: number, tb: string) => s + fs.statSync(path.join(cwd, 'public/thumbnail', tb)).size, 0);
-  const mediasSize = medias
-    .reduce((s: number, media: string) => s + fs.statSync(path.join(cwd, 'public/media', media)).size, 0);
+  const mp4Size = mp4
+    .reduce((s: number, file: string) => s + fs.statSync(path.join(cwd, 'public/mp4', file)).size, 0);
+  const {stdout}: any = exec(`du -s ${path.join(cwd, 'public/hls')} | cut -f1`);
+  const hlsSize = +stdout;
 
-  res.json({medias, thumbnailsSize, mediasSize});
+  res.json({mp4, hls, mp4Size, hlsSize, thumbnailsSize});
+});
+
+/**
+ * GET /admin/media/images
+ * Only for admins.
+ * Return infos about images stored on the server.
+ * All size units are in bytes.
+ * @return {images: [string], size: number}
+ */
+router.get('/media/images', (req, res) => {
+  const images: string[] = fs.readdirSync(path.join(cwd, 'public/images'));
+  const size = images
+    .reduce((s: number, file: string) => s + fs.statSync(path.join(cwd, 'public/images', file)).size, 0);
+
+  return sendData(res, null, {images, size});
 });
 
 /**
