@@ -49,20 +49,26 @@ router.route('/')
       q.user = { $in: following ? following.following : [] };
     }
 
-    Reaction.find(q)
-      .sort({date: +req.query.sort === -1 ? 'desc' : 'asc'})
-      .skip(req.query.page * req.query.pageSize || 0)
-      .limit(+req.query.pageSize || 10)
-      .then(docs => {
-        if (req.query.populate && req.query.populate === 'true') {
-          return Promise.all(docs.map(e => e.populate('user', REDUCED_USER_FIELDS).execPopulate()));
-        }
-        return Promise.resolve(docs);
-      })
-      .then(docs => req.user
-        ? Promise.all(docs.map((doc: any) => doc.addHasLiked((req.user as any)._id))) : Promise.resolve(docs))
-      .then(docs => sendData(res, null, docs))
-      .catch(err => sendError(err, res));
+    try {
+      let docs = await Reaction.find(q)
+        .sort({date: +req.query.sort === -1 ? 'desc' : 'asc'})
+        .skip(req.query.page * req.query.pageSize || 0)
+        .limit(+req.query.pageSize || 10);
+
+      console.log('populating');
+      if (req.query.populate && req.query.populate === 'true') {
+        docs = await Promise.all(docs.map(e => e.populate('user', REDUCED_USER_FIELDS).execPopulate()));
+      }
+
+      if (req.user) {
+        docs = await Promise.all(docs.map((doc: any) => doc.addHasLiked((req.user as any)._id)));
+      }
+
+      sendData(res, null, docs);
+    } catch (err) {
+      console.error(err);
+      sendError(err, res);
+    }
   })
 
 /**
