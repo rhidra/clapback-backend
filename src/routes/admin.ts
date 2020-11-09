@@ -7,6 +7,9 @@ import {sendData, sendSuccess} from '../middleware/utils';
 import check from 'check-disk-space';
 import util from 'util';
 import { exec as exec_ } from 'child_process';
+import Reaction from '../models/ReactionModel';
+import Topic from '../models/TopicModel';
+import User from '../models/UserModel';
 
 const router = Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
@@ -91,7 +94,88 @@ router.delete('/modified-images', async (req, res) => {
 });
 
 /**
- * TODO: A route that check if the database if coherent
+ * GET /admin/db-check
+ * Only for admins.
+ * Check for incoherences between media files and the DB.
  */
+router.get('/db-check', async (req, res) => {
+  const hls: string[] = fs.readdirSync(path.join(cwd, 'public/hls'));
+  const mp4: string[] = fs.readdirSync(path.join(cwd, 'public/mp4'));
+  const images: string[] = fs.readdirSync(path.join(cwd, 'public/image')).filter(s => !s.includes('_'));
+  const unlinkedHLS: string[] = [];
+  const unlinkedMP4: string[] = [];
+  const unlinkedImages: string[] = [];
+  const unlinkedTopics: any[] = [];
+  const unlinkedReactions: any[] = [];
+  const unlinkedUsers: any[] = [];
+
+  const checkHLS = (fileId: string) => fs.existsSync(path.join(cwd, 'public/hls', fileId, 'master.m3u8'));
+  const checkImg = (filename: string) => fs.existsSync(path.join(cwd, 'public/image', filename));
+
+  // Check for HLS files not linked to the DB
+  console.log('Check HLS files');
+  hls.forEach(async fileId => {
+    const query = RegExp(`.*${fileId}.*`);
+    let obj = await Reaction.findOne({video: query});
+    if (!obj) {
+      obj = await Topic.findOne({$or: [
+        {'centerPanel.video': query}, {'leftPanel.video': query}, {'rightPanel.video': query}
+      ]});
+    }
+
+    if (!obj) {
+      unlinkedHLS.push(fileId);
+    }
+  });
+
+  // Check for MP4 files not linked to HLS
+  console.log('Check MP4 files');
+  mp4.forEach(filename => checkHLS(filename.slice(0, -4)) ? unlinkedMP4.push(filename.slice(0, -4)) : null);
+
+  // Check for images not linked to any topic or user
+  console.log('Check image files');
+  images.forEach(async filename => {
+    let obj = await User.findOne({image: filename});
+    if (!obj) {
+      obj = await Topic.findOne({$or: [{'leftPanel.image': filename}, {'rightPanel.image': filename}]});
+    }
+
+    if (!obj) {
+      unlinkedImages.push(filename);
+    }
+  });
+
+  // Check for topics without valid videos or images
+  console.log('Check Topics');
+  for await (const topic of (Topic.find() as any)) {
+    if ((topic.centerPanel.video && !checkHLS(topic.centerPanel.video))
+        || (topic.leftPanel.video && !checkHLS(topic.leftPanel.video))
+        || (topic.rightPanel.video && !checkHLS(topic.rightPanel.video))
+        || (topic.leftPanel.image && !checkImg(topic.leftPanel.image))
+        || (topic.rightPanel.image && !checkImg(topic.rightPanel.image))) {
+      unlinkedTopics.push(topic);
+    }
+  }
+
+  // Check for reactions without valid videos
+  console.log('Check Reactions');
+  for await (const reaction of (Reaction.find() as any)) {
+    if (!reaction.video || !checkHLS(reaction.video)) {
+      unlinkedReactions.push(reaction);
+    }
+  }
+
+  // Check for users without valid images
+  console.log('Check Users');
+  for await (const user of (User.find() as any)) {
+    if (user.image && !checkImg(user.image)) {
+      unlinkedUsers.push(user);
+    }
+  }
+
+  console.log('Checking DB done !');
+  return sendData(res, null, {unlinkedHLS, unlinkedMP4, unlinkedImages,
+    unlinkedTopics, unlinkedReactions, unlinkedUsers});
+});
 
 export = router;
