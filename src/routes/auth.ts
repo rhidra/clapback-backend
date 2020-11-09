@@ -113,17 +113,16 @@ router.post('/pwd', auth, guard.check('admin'), (req, res) => {
  * Need a refresh token, created at login.
  * @body {id: userId, refreshToken}
  */
-router.post('/token', (req: express.Request, res: express.Response) => {
-  const p: Array<Promise<any>> = [];
-  p.push(User.findById(req.body.id).exec());
-  p.push(RefreshTokenModel.findOne({userId: req.body.id, token: req.body.refreshToken,
-    status: 'active', exp: {$gte: moment()}}).exec());
-  Promise.all(p).then((t: any) => {
-    const [user, refreshToken] = t;
-    if (!user || !user.permissions.includes('user')) { sendError('Permission denied !', res, 403); }
-    if (!refreshToken) { sendError('Refresh token invalid !', res, 403); }
-    res.json(user.toAuthJSON());
-  });
+router.post('/token', async (req: express.Request, res: express.Response) => {
+  const [user, refreshToken]: any = await Promise.all([
+    User.findById(req.body.id).exec(),
+    RefreshTokenModel.findOne({userId: req.body.id, token: req.body.refreshToken,
+      status: 'active', exp: {$gte: moment()}}).exec(),
+  ]);
+
+  if (!user || !user.permissions.includes('user')) { sendError('Permission denied !', res, 403); }
+  if (!refreshToken) { sendError('Refresh token invalid !', res, 403); }
+  res.json(user.toAuthJSON());
 });
 
 /**
