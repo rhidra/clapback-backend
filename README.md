@@ -1,4 +1,5 @@
-# Clapback backend API
+Clapback backend API
+====================
 
 ## Installation of dependancies
 
@@ -29,6 +30,15 @@ npm run dev
 This starts a mongod instance on the `27017` port. For more info, look at `package.json`.
 
 Connect to `http://localhost:9000/`.
+
+## Setup in production
+
+Install [docker](https://docs.docker.com/engine/install/ubuntu/) and [docker compose](https://docs.docker.com/compose/install/).
+
+Initialize the Let's Encrypt configuration:
+```shell script
+./init-letsencrypt.sh
+```
 
 ## Deployment Pipeline
 
