@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domains=(api.zuoyoubycurios.com)
+domains=(api.clapbacktheapp.com)
 rsa_key_size=4096
 data_path="./certbot"
 email="zuoyoucurios@gmail.com" # Adding a valid address is strongly recommended
