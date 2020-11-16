@@ -3,3 +3,4 @@ data-node/
 public/
 dist/
 dump/
+node_modules/

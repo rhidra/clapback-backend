@@ -12,8 +12,8 @@ RUN mkdir -p ./public/thumbnail
 # Copy source files
 COPY ./ ./
 
-# Install npm (Remove this line because it was crashing container build, maybe NPM does not need to be updated ?)
-# RUN npm install -g npm@latest
+# Install npm
+RUN npm install -g npm@latest
 
 # Install dependencies
 RUN npm install
