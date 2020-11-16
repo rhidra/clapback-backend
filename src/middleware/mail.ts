@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import ejs from 'ejs';
 
 export class Mailer {
-  static fromEmail = 'donotreply@zuoyoubycurios.com';
+  static fromEmail = 'donotreply@clapbacktheapp.com';
 
   static transport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
