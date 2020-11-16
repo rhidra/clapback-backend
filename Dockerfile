@@ -13,6 +13,8 @@ RUN mkdir -p ./public/thumbnail
 COPY ./ ./
 
 # Install npm
+# Could not install npm before, so added this line to fix
+# ref: https://stackoverflow.com/questions/52196518/could-not-get-uid-gid-when-building-node-docker
 RUN npm config set unsafe-perm true
 RUN npm install -g npm@latest
 
