@@ -16,7 +16,7 @@ let channel_in = null;
 let channel_out = null;
 
 
-const dbURI = process.env.NODE_ENV === 'development' ? 'mongodb://localhost:27017/zuoyou' : `mongodb://mongo:27017/zuoyou`;
+const dbURI = process.env.NODE_ENV === 'development' ? 'mongodb://localhost:27017/db' : `mongodb://mongo:27017/db`;
 let clientDB = new MongoClient(dbURI);
 let db = null;
 
@@ -48,8 +48,8 @@ async function tryConnectionMQ() {
 async function tryConnectionDB() {
   try  {
     await clientDB.connect();
-    await clientDB.db('zuoyou').command({ping: 1});
-    db = clientDB.db('zuoyou');
+    await clientDB.db('db').command({ping: 1});
+    db = clientDB.db('db');
     console.log('Successfully connected to the DB');
   } catch (e) {
       console.error(e);

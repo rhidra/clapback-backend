@@ -43,7 +43,7 @@ app.use(cors());
 app.set('view engine', 'ejs');
 
 // Connecting to MongoDB
-const dbURI = process.env.NODE_ENV === 'development' ? 'mongodb://localhost:27017/zuoyou' : `mongodb://mongo:27017/zuoyou`;
+const dbURI = process.env.NODE_ENV === 'development' ? 'mongodb://localhost:27017/db' : `mongodb://mongo:27017/db`;
 mongoose.connection.on('connecting', () => console.log('connecting to MongoDB...'));
 mongoose.connection.on('error', (error) => {
   console.error('Error in MongoDb connection: ' + error);
