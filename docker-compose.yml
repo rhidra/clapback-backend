@@ -55,7 +55,7 @@ services:
     depends_on:
       - nginx
     # Renew the certificate every 12h
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    #entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 volumes:
   certbot-etc:
