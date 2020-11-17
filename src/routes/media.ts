@@ -12,6 +12,8 @@ import {Router, Request, Response} from 'express';
 import {VideoEncodingQueue} from '../middleware/queue';
 import Reaction from '../models/ReactionModel';
 import Topic from '../models/TopicModel';
+import genThumbnail from 'simple-thumbnail';
+import ffmpeg from 'ffmpeg-static';
 import PendingMedia from '../models/PendingMediaModel';
 
 const router = Router();
