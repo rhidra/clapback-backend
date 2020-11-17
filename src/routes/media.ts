@@ -184,6 +184,19 @@ router.get('/video/:fileid/thb', async (req: Request, res: Response) => {
   const [fullname, _, opt, fileId] = parseFilename(req.params.fileid + '.png');
   const originalFile = 'public/thumbnail/' + fileId + '.png';
   const sentFile = 'public/thumbnail/' + fullname;
+
+  // Generate the thumbnail if it doesn't exist
+  if (!await fileExists(originalFile)) {
+    const tbPath = path.join(process.cwd(), originalFile);
+    const fileMP4Path = path.join(process.cwd(), 'public/mp4', fileId + '.mp4');
+    if (await fileExists(`public/mp4/${fileId}.mp4`)) {
+      await genThumbnail(fileMP4Path, tbPath, '150x?', {path: ffmpeg});
+    } else {
+      await genThumbnail(`${process.env.HOST_URL}/media/video/${fileId}/hls`, tbPath, '150x?', {path: ffmpeg});
+    }
+  }
+
+  // Modify the image if required
   if (process.env.NODE_ENV === 'production' || !await fileExists(sentFile)) {
     await modifyImage(originalFile, fullname, opt, sentFile);
   }
