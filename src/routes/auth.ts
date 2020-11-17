@@ -120,8 +120,8 @@ router.post('/token', async (req: express.Request, res: express.Response) => {
       status: 'active', exp: {$gte: moment()}}).exec(),
   ]);
 
-  if (!user || !user.permissions.includes('user')) { sendError('Permission denied !', res, 403); }
-  if (!refreshToken) { sendError('Refresh token invalid !', res, 403); }
+  if (!user || !user.permissions.includes('user')) { return sendError('Permission denied !', res, 403); }
+  if (!refreshToken) { return sendError('Refresh token invalid !', res, 403); }
   res.json(user.toAuthJSON());
 });
 
