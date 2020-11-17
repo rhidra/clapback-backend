@@ -54,16 +54,15 @@ function parseFilename(uri: string): [string, string, ImageOptions, string] {
   return [fullname, ext.toLowerCase(), opt, fileId];
 }
 
-function modifyImage(image: any, filename: string, opt: ImageOptions, out?: string) {
-  return Jimp.read(image).then(img => new Promise(r => {
-    img = img.quality(opt.quality ? opt.quality : 100)
-      .resize(opt.width ? opt.width : (opt.height ? Jimp.AUTO : img.bitmap.width),
-        opt.height ? (opt.width ? Jimp.AUTO : opt.height) : Jimp.AUTO);
+async function modifyImage(image: any, filename: string, opt: ImageOptions, out?: string) {
+    let img = await Jimp.read(image);
+    img = img.quality(opt.quality ? opt.quality : 100);
+    img = img.resize(opt.width ? opt.width : (opt.height ? Jimp.AUTO : img.bitmap.width),
+                     opt.height ? (opt.width ? Jimp.AUTO : opt.height) : Jimp.AUTO);
     if (opt.width && opt.height) {
       img = img.crop((img.bitmap.width - opt.width) / 2, (img.bitmap.height - opt.height) / 2, opt.width, opt.height);
     }
-    img.write(out ? out : 'public/image/' + filename, r);
-  }));
+    return new Promise(r => img.write(out ? out : 'public/image/' + filename, r));
 }
 
 /** MEDIA SERVER
