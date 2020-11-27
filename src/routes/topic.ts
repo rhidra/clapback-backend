@@ -21,7 +21,7 @@ router.route('/')
    * @param page Offset
    */
   .get(notAuth, (req, res) => Topic
-    .find((req.query.approved && req.query.isPublic === 'true') || !req.user || !hasPerm(req, 'creator')
+    .find(req.query.isPublic || !req.user || !hasPerm(req, 'creator')
                     ? {isPublic: true, isProcessing: false, date: {$lte: moment().toISOString()}} : {})
     .sort({date: 'desc'})
     .skip(req.query.page * req.query.pageSize || 0)
