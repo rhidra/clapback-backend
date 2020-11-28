@@ -1,6 +1,10 @@
 import amqp from 'amqplib/callback_api';
 import {Channel, Connection, ConsumeMessage} from 'amqplib';
 
+const mqUser = process.env.RABBITMQ_DEFAULT_USER;
+const mqPassword = process.env.RABBITMQ_DEFAULT_PASS;
+const mqURI = process.env.NODE_ENV === 'development' ? 'amqp://localhost' : `amqp://${mqUser}:${mqPassword}@rabbitmq`;
+
 export class VideoEncodingQueue {
   connection: Connection;
   channel: Channel;
@@ -14,7 +18,7 @@ export class VideoEncodingQueue {
   }
 
   async tryConnection() {
-    amqp.connect('amqp://localhost', async (e, conn: Connection) => {
+    amqp.connect(mqURI, async (e, conn: Connection) => {
       if (e) {
         setTimeout(() => this.tryConnection(), 50);
       } else {
