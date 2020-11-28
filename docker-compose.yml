@@ -13,10 +13,28 @@ services:
       - "9000:9000"
     depends_on:
       - mongo
+      - rabbitmq
     volumes:
       - ./public:/usr/app/public
     links:
       - mongo
+      - rabbitmq
+
+  # Video processor (for encoding with RabbitMQ)
+  video-processor:
+    container_name: video-processor
+    restart: always
+    build: 
+      context: .
+      dockerfile: ./video-processor/Dockerfile
+    volumes: 
+      - ./public:/var/public
+    depends_on:
+      - api
+      - rabbitmq
+    links:
+      - mongo
+      - rabbitmq
 
   # Mongo DB, mounted on 27017
   mongo:
