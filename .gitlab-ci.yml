@@ -10,6 +10,7 @@
 
 variables:
   DEPLOYMENT_SERVER_IP: api.clapbacktheapp.com
+  USER: remy_hidra_gmail_com
 
 stages:
   - deploy
@@ -24,4 +25,4 @@ deploy:
     - chmod 700 ~/.ssh
     - chmod 600 ~/.ssh/rsa_key
     - ssh-keyscan -H $DEPLOYMENT_SERVER_IP >> ~/.ssh/known_hosts
-    - ssh -i ~/.ssh/rsa_key api@api.clapbacktheapp.com "cd clapback-backend; git pull; docker-compose build; docker-compose up -d"
+    - ssh -i ~/.ssh/rsa_key $USER@$DEPLOYMENT_SERVER_IP "cd clapback-backend; git pull; docker-compose build; docker-compose up -d"
