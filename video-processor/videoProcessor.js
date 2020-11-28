@@ -15,15 +15,19 @@ let connection = null;
 let channel_in = null;
 let channel_out = null;
 
+const mqUser = process.env.RABBITMQ_DEFAULT_USER;
+const mqPassword = process.env.RABBITMQ_DEFAULT_PASS;
 
 const dbURI = process.env.NODE_ENV === 'development' ? 'mongodb://localhost:27017/db' : `mongodb://mongo:27017/db`;
+const mqURI = process.env.NODE_ENV === 'development' ? 'amqp://localhost' : `amqp://${mqUser}:${mqPassword}@rabbitmq`;
 let clientDB = new MongoClient(dbURI);
 let db = null;
 
 async function tryConnectionMQ() {
-  amqp.connect('amqp://localhost', async (e, conn) => {
+  amqp.connect(mqURI, async (e, conn) => {
     if (e) {
-      setTimeout(() => tryConnectionMQ(), 50);
+      console.error(`Error connecting to the MQ (${mqURI}) !`);
+      setTimeout(() => tryConnectionMQ(), 1000);
     } else {
       connection = conn;
 
@@ -76,24 +80,36 @@ async function processData(msg) {
     });
   } catch (e) {
     console.log(`Error during the conversion: ${e}`);
-    channel_in.nack(msg);
+    setTimeout(() => channel_in.nack(msg), 1000);
   }
 }
 
+// fileMP4Path: e.g: 'public/mp4/aaaaa.mp4'
 async function processVideo(fileId, fileMP4Path) {
+  // Paths (cf. Dockerfile for prod config)
+  const tbPath = process.env.NODE_ENV === 'development' 
+    ? path.join(process.cwd(), 'public/thumbnail', fileId + '.png')
+    : `/var/public/thumbnail/${fileId}.png`;
+
+  const hlsPath = process.env.NODE_ENV === 'development'
+    ? path.join(process.cwd(), `public/hls/${fileId}`)
+    : `/var/public/hls/${fileId}`;
+
+  const inputPath = process.env.NODE_ENV === 'development' 
+    ? path.join(process.cwd(), fileMP4Path) 
+    : `/var/${fileMP4Path}`;
+  
   // Thumbnail generation
-  const tbPath = path.join(process.cwd(), 'public/thumbnail', fileId + '.png');
-  await genThumbnail(fileMP4Path, tbPath, '150x?', {path: ffmpeg});
+  await genThumbnail(inputPath, tbPath, '150x?', {path: ffmpeg});
 
   // Video encoding in HLS for adaptive bitrate and resolution streaming
   // Reference : https://www.martin-riedl.de/2020/04/17/using-ffmpeg-as-a-hls-streaming-server-overview/
-  const hlsPath = path.join(process.cwd(), `public/hls/${fileId}`);
   fs.mkdirSync(hlsPath, {recursive: true});
   const ffmpegExec = path.join(path.dirname(require.resolve('ffmpeg-static')), 'ffmpeg');
-  const speed = process.env.NODE_ENV === 'development' ? 'veryfast' : `veryslow`;
+  const speed = process.env.NODE_ENV === 'development' ? 'veryfast' : `medium`; // Maybe put veryslow for prod
 
   const child = spawn(ffmpegExec, [
-    '-i', `${path.join(process.cwd(), fileMP4Path)}`,
+    '-i', `${inputPath}`,
     // Creates two video feed, down scaling the resolution
     '-filter_complex',
     '[v:0]split=2[vtemp001][vtemp002];[vtemp001]scale=w=234:h=416[vout001];[vtemp002]scale=w=720:h=1280[vout002]',
