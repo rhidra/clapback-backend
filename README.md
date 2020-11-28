@@ -45,7 +45,7 @@ In case this does not work, you can re-run the command.
 Maybe remove the `certbot/` directory, just to be sure.
 This comes from [this tutorial](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71).
 ```shell script
-./init-letsencrypt.sh
+sudo ./init-letsencrypt.sh
 ```
 
 Update the `.env` file.
