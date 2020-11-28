@@ -72,6 +72,8 @@ docker-compose up
 Sometimes, there are errors that the certificate is self signed.
 Just delete the `certbot` folder, make sure the containers are down, and start again.
 
+To create a new admin user, just register a new user at `POST /auth/register`, the first user will be granted admin access.
+
 ## Deployment Pipeline
 
 To setup the deployement pipeline, generate a set of RSA keys with `ssh-keygen`.

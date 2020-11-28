@@ -18,6 +18,7 @@ const auth = jwt({secret: process.env.JWT_SECRET});
 /**
  * POST /auth/registration
  * Classic email/password registration
+ * If no user exist already, this user is made administrator
  * @body {email, password}
  */
 router.post('/register', (req: express.Request, res: express.Response) => {
