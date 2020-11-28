@@ -35,7 +35,14 @@ Connect to `http://localhost:9000/`.
 
 First, to secure the server, you need to [setup the SSH keys](https://www.digitalocean.com/community/tutorial_collections/how-to-set-up-ssh-keys).
 Then configure [the firewall UFW](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu-20-04).
+
 Install [docker](https://docs.docker.com/engine/install/ubuntu/) and [docker compose](https://docs.docker.com/compose/install/).
+To have docker working properly, you may need to add the user to the 
+docker group. Don't forget to logout and login to apply the effect.
+```shell script
+sudo groupadd docker
+sudo usermod -aG docker $USER
+```
 
 Setup the DNS server correctly, and update the domain name in `init-letsencrypt.sh`.
 The DNS configuration needs to be done, which can take up to 48h, before you can go to the next step.
@@ -45,7 +52,11 @@ In case this does not work, you can re-run the command.
 Maybe remove the `certbot/` directory, just to be sure.
 This comes from [this tutorial](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71).
 ```shell script
-sudo ./init-letsencrypt.sh
+./init-letsencrypt.sh
+```
+You may need to change the permission of the `./certbot` folder.
+```shell script
+sudo chown -R $USER certbot
 ```
 
 Update the `.env` file.
@@ -57,6 +68,9 @@ You should be able to start the server:
 ```shell script
 docker-compose up
 ```
+
+Sometimes, there are errors that the certificate is self signed.
+Just delete the `certbot` folder, make sure the containers are down, and start again.
 
 ## Deployment Pipeline
 
