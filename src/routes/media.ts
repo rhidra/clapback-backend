@@ -18,16 +18,24 @@ import PendingMedia from '../models/PendingMediaModel';
 
 try {
   fs.mkdirSync('public/mp4', {recursive: true});
-} catch (e) {}
+} catch (e) {
+  console.log('public/mp4 already exists');
+}
 try {
   fs.mkdirSync('public/hls', {recursive: true});
-} catch (e) {}
+} catch (e) {
+  console.log('public/hls already exists');
+}
 try {
   fs.mkdirSync('public/thumbnail', {recursive: true});
-} catch (e) {}
+} catch (e) {
+  console.log('public/thumbnail already exists');
+}
 try {
   fs.mkdirSync('public/image', {recursive: true});
-} catch (e) {}
+} catch (e) {
+  console.log('public/image already exists');
+}
 
 
 const router = Router();
