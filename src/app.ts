@@ -85,9 +85,9 @@ mongoose.connect(dbURI, {server: {auto_reconnect: true}});
 
 app.use(auth.initialize());
 
-// Because of Nginx in prod, image and thumbnails URL are rewritten (the /media prefix is removed), 
+// Because of Nginx in prod, image and thumbnails URL are rewritten (the /media prefix is removed),
 // which causes problems when deleting images, because the prefix cannot be re-added.
-// Instead, we add it manually in Node 
+// Instead, we add it manually in Node
 // It is not useful yet for thumbnails, because we never use anything other than GET
 // TODO: Make that better
 if (process.env.NODE_ENV === 'production') {
