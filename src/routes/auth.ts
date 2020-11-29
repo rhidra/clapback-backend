@@ -80,6 +80,15 @@ router.post('/login', passport.authenticate('email'), (req, res) => User.findByI
 );
 
 /**
+ * POST /auth/login/check
+ * Check if the email is already taken, to see if the user needs to register or just login.
+ * @body {email}
+ * TODO: This is just a temporary route to handle auth in mobile app, before SMS auth works
+ */
+router.post('/login/check', async (req, res) =>
+  (await User.findOne({email: req.body.email})) ? sendSuccess(res) : sendError('Unknown user', res, 400));
+
+/**
  * POST /auth/reset
  * Password reset for email/password login
  * @body {email}
