@@ -138,6 +138,7 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     await modifyImage(req.file.buffer, fileRef, opt);
     sendSuccess(res);
   } else if (ext === 'mp4') {
+    fs.mkdirSync('public/mp4', {recursive: true});
     const fileMP4Path = `public/mp4/${fileRef}.${ext}`;
     fs.writeFileSync(fileMP4Path, req.file.buffer);
 
