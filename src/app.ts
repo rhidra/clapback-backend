@@ -30,6 +30,31 @@ Sentry.init({
   environment: process.env.NODE_ENV
 });
 
+// CORS configuration
+// https://ionicframework.com/docs/troubleshooting/cors
+const allowedOrigins = process.env.NODE_ENV === 'development' ? [
+  'http://localhost:8100',
+  'http://localhost:4200',
+] : [
+  // Ionic Mobile App
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost',
+  'http://localhost:8080',
+
+  // Admin panel
+  'https://admin.clapbacktheapp.com',
+];
+const corsOptions = {
+  origin: (origin: string, callback: any) => {
+    if (allowedOrigins.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Origin not allowed by CORS'));
+    }
+  }
+};
+
 // Sentry request handler
 app.use(Sentry.Handlers.requestHandler() as express.RequestHandler);
 
@@ -39,7 +64,7 @@ app.use(logger(process.env.NODE_ENV === 'development' ? 'dev' : 'combined', {
 app.use(express.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors(corsOptions));
 app.set('view engine', 'ejs');
 
 // Connecting to MongoDB
