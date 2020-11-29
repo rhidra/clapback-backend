@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 // Initialize config file .env
 dotenv.config();
 
-import express from 'express';
+import express, { NextFunction } from 'express';
 import createError = require('http-errors');
 import mongoose = require('mongoose');
 import logger = require('morgan');
@@ -59,6 +59,20 @@ mongoose.connection.on('disconnected', () => {
 mongoose.connect(dbURI, {server: {auto_reconnect: true}});
 
 app.use(auth.initialize());
+
+// Because of Nginx in prod, image and thumbnails URL are rewritten (the /media prefix is removed), 
+// which causes problems when deleting images, because the prefix cannot be re-added.
+// Instead, we add it manually in Node 
+// TODO: Make that better
+if (process.env.NODE_ENV === 'production') {
+  const addMediaPrefix: any = (req: any, res: Response, next: NextFunction) => {
+    req.url = '/media' + req.url;
+    next();
+  };
+  // It is not useful yet for thumbnails, because we never use anything other than GET
+  // app.get('/thumbnail', addMediaPrefix);
+  app.use('/image', addMediaPrefix);
+}
 
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
