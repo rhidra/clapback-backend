@@ -16,10 +16,18 @@ import genThumbnail from 'simple-thumbnail';
 import ffmpeg from 'ffmpeg-static';
 import PendingMedia from '../models/PendingMediaModel';
 
-fs.mkdirSync('public/mp4', {recursive: true});
-fs.mkdirSync('public/hls', {recursive: true});
-fs.mkdirSync('public/thumbnail', {recursive: true});
-fs.mkdirSync('public/image', {recursive: true});
+try {
+  fs.mkdirSync('public/mp4', {recursive: true});
+} catch (e) {}
+try {
+  fs.mkdirSync('public/hls', {recursive: true});
+} catch (e) {}
+try {
+  fs.mkdirSync('public/thumbnail', {recursive: true});
+} catch (e) {}
+try {
+  fs.mkdirSync('public/image', {recursive: true});
+} catch (e) {}
 
 
 const router = Router();
