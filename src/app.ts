@@ -63,15 +63,17 @@ app.use(auth.initialize());
 // Because of Nginx in prod, image and thumbnails URL are rewritten (the /media prefix is removed), 
 // which causes problems when deleting images, because the prefix cannot be re-added.
 // Instead, we add it manually in Node 
+// It is not useful yet for thumbnails, because we never use anything other than GET
 // TODO: Make that better
 if (process.env.NODE_ENV === 'production') {
-  const addMediaPrefix: any = (req: any, res: Response, next: NextFunction) => {
-    req.url = '/media' + req.url;
+  app.use((req, res, next) => {
+    const prefix = '/image'; // Filter according to this prefix
+    if (req.url.substring(0, prefix.length) === prefix) {
+      req.url = `/media${req.url}`;
+    }
     next();
-  };
-  // It is not useful yet for thumbnails, because we never use anything other than GET
-  // app.get('/thumbnail', addMediaPrefix);
-  app.use('/image', addMediaPrefix);
+
+  });
 }
 
 app.use('/', indexRouter);
