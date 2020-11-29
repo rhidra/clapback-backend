@@ -104,11 +104,7 @@ async function processVideo(fileId, fileMP4Path) {
 
   // Video encoding in HLS for adaptive bitrate and resolution streaming
   // Reference : https://www.martin-riedl.de/2020/04/17/using-ffmpeg-as-a-hls-streaming-server-overview/
-  try {
   fs.mkdirSync(hlsPath, {recursive: true});
-  } catch (e) {
-    console.log(`The path ${hlsPath} already exists !`);
-  }
   const ffmpegExec = path.join(path.dirname(require.resolve('ffmpeg-static')), 'ffmpeg');
   const speed = process.env.NODE_ENV === 'development' ? 'veryfast' : `ultrafast`; // Maybe put veryslow for prod
 
