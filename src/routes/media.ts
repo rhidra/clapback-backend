@@ -16,6 +16,12 @@ import genThumbnail from 'simple-thumbnail';
 import ffmpeg from 'ffmpeg-static';
 import PendingMedia from '../models/PendingMediaModel';
 
+fs.mkdirSync('public/mp4', {recursive: true});
+fs.mkdirSync('public/hls', {recursive: true});
+fs.mkdirSync('public/thumbnail', {recursive: true});
+fs.mkdirSync('public/image', {recursive: true});
+
+
 const router = Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
 const guard = express_jwt_permissions();
@@ -138,7 +144,6 @@ router.post('/', auth, upload.single('media'), async (req, res) => {
     await modifyImage(req.file.buffer, fileRef, opt);
     sendSuccess(res);
   } else if (ext === 'mp4') {
-    fs.mkdirSync('public/mp4', {recursive: true});
     const fileMP4Path = `public/mp4/${fileRef}.${ext}`;
     fs.writeFileSync(fileMP4Path, req.file.buffer);
 

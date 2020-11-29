@@ -6,7 +6,8 @@ RUN mkdir -p /usr/app
 WORKDIR /usr/app
 
 # Create directory for media server
-RUN mkdir -p ./public/media
+RUN mkdir -p ./public/mp4
+RUN mkdir -p ./public/hls
 RUN mkdir -p ./public/thumbnail
 
 # Copy source files
