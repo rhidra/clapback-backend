@@ -46,7 +46,7 @@ export function sendError(err: string, res: express.Response, errorCode: number 
 }
 
 export const devOnly = (req: Request, res: Response, next: NextFunction) =>
-  process.env.NODE_ENV === 'development' ? next() : res.status(500).send('');
+  process.env.NODE_ENV === 'development' ? next() : res.status(400).send('');
 
 /* MODELS */
 // Reduced user profile that can be viewed by other users. Follow Mongoose select syntax
