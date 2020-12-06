@@ -130,7 +130,7 @@ router.get('/db-check', async (req, res) => {
 
   // Check for MP4 files not linked to HLS
   console.log('Check MP4 files');
-  mp4.forEach(filename => checkHLS(filename.slice(0, -4)) ? unlinkedMP4.push(filename.slice(0, -4)) : null);
+  mp4.forEach(filename => checkHLS(filename.slice(0, -4)) ? null : unlinkedMP4.push(filename.slice(0, -4)));
 
   // Check for images not linked to any topic or user
   console.log('Check image files');
