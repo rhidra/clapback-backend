@@ -16,7 +16,7 @@ const router = express.Router();
 const auth = jwt({secret: process.env.JWT_SECRET});
 
 /**
- * POST /auth/registration
+ * POST /auth/register
  * Classic email/password registration
  * If no user exist already, this user is made administrator
  * @body {email, password}
@@ -43,7 +43,7 @@ router.post('/register', (req: express.Request, res: express.Response) => {
         const refreshToken: string = (RefreshTokenModel as any).generate(user._id);
         res.json(Object.assign({refreshToken}, user.toAuthJSON()));
 
-        Mailer.sendMail(email, 'Welcome in 左右 !', 'registration.ejs', {
+        Mailer.sendMail(email, 'Welcome in Clapback !', 'registration.ejs', {
           email,
           tokenUrl: process.env.HOST_URL + '/auth/email/' + (newUser[0] as any).emailToken
         });
@@ -100,7 +100,7 @@ router.post('/reset', (req, res) =>
 );
 
 /**
- * TODO: Remove this route !!!!
+ * TODO: Remove this route !!!! (Maybe ?)
  * POST /auth/pwd
  * Change the password of a user
  * ONLY FOR ADMINS
