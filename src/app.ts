@@ -47,7 +47,7 @@ const allowedOrigins = process.env.NODE_ENV === 'development' ? [
 ];
 const corsOptions = {
   origin: (origin: string, callback: any) => {
-    if (allowedOrigins.includes(origin) || !origin) {
+    if (allowedOrigins.includes(origin) || !origin || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
       callback(new Error('Origin not allowed by CORS'));
