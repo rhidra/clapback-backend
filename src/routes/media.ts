@@ -212,9 +212,11 @@ router.get('/video/:fileid/mp4', devOnly, async (req: Request, res: Response) =>
   res.sendFile(path.join(process.cwd(), 'public/mp4', req.params.fileid + '.mp4'));
 });
 
-router.get('/video/:fileid/hls', devOnly, async (req: Request, res: Response) => {
+const hlsMaster = async (req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), 'public/hls', req.params.fileid, 'master.m3u8'));
-});
+};
+router.get('/video/:fileid/hls', devOnly, hlsMaster);
+router.get('/video/:fileid/hls.m3u8', devOnly, hlsMaster); // Add the .m3u8 extension for YoYo Player in Flutter
 
 router.get('/video/:fileid/stream_:v.m3u8', devOnly, async (req: Request, res: Response) => {
   res.sendFile(path.join(process.cwd(), 'public/hls', req.params.fileid, 'stream_' + req.params.v + '.m3u8'));
