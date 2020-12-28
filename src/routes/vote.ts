@@ -17,7 +17,7 @@ const guard = express_jwt_permissions();
  *
  * POST /quiz/vote/:idQuiz
  * Vote for a quiz
- * @body {choice}
+ * @body {choice: Choice ID}
  *
  * DELETE /quiz/vote/:idQuiz
  * Delete a vote for the specific quiz for the user
