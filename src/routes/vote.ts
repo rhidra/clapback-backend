@@ -48,13 +48,16 @@ router.route('/:idQuiz')
  * GET /quiz/vote/:idQuiz/results
  * Retrieve the results of the quiz, with the format [{choice, count}].
  */
-router.get('/:idQuiz/results', auth, guard.check('user'), (req, res) => Quiz.findById(req.params.idQuiz)
-  .then((quiz: any) => Promise.all(quiz.choices
-    .map((choice: any) => Vote
-      .count({quiz: quiz._id, choice: choice._id}).exec()))
-    .then((counts: Array<number|any>) =>
-      sendData(res, null, counts.map((count, i) => ({choice: quiz.choices[i]._id, count}))))
-  ).catch(err => sendError(err, res, 400))
-);
+router.get('/:idQuiz/results', auth, guard.check('user'), async (req, res) => {
+    try {
+      const quiz: any = await Quiz.findById(req.params.idQuiz);
+      const p = quiz.choices.map((choice: any) => Vote.count({quiz: quiz._id, choice: choice._id}).exec());
+      const counts: Array<number|any> = await Promise.all(p);
+      const data = counts.map((count, i) => ({choice: quiz.choices[i]._id, count}));
+      sendData(res, null, data);
+    } catch (err) {
+      sendError(err, res, 400);
+    }
+  });
 
 export = router;
